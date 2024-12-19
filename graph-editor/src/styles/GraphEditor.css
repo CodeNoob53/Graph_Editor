@@ -1,0 +1,89 @@
+/* Робоча зона графа */
+#cy {
+    width: 800px;
+    height: 600px;
+    border: 1px solid #3c3c3c;
+    border-radius: 2px;
+    background-color: #252526; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* region Стилі для графічних елементів cytoscape */
+#editor {
+    margin-top: 10px;
+    position: relative; /* Щоб можна було позиціонувати zoomDisplay відносно editor */
+    width: 800px; /* Ширина так само як #cy */
+    height: 600px; /* Висота так само як #cy */
+}
+/* endregion */
+
+/* region Адаптивність */
+@media (max-width: 900px) {
+    #cy, #info {
+        width: 90%;
+    }
+}
+
+@media (max-width: 600px) {
+    #cy {
+        height: 400px;
+    }
+
+    button {
+        font-size: 12px;
+    }
+
+    #info {
+        font-size: 12px;
+    }
+}
+/* endregion */
+
+/* Відображення масштабу */
+#zoomDisplay {
+    position: absolute;
+    top: 0px;       /* Відступ згори */
+    right: 0px;     /* Відступ справа */
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.288);
+    color: white;
+    border-radius: 0px 0px 0px 5px;
+    font-size: 14px;
+    z-index: 1000;
+}
+
+#gridControls {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+#gridCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Щоб не заважати взаємодії з графом */
+    width: 800px;
+    height: 600px;
+}
+
+#gridSizeInput {
+    padding: 2px;
+    direction: none;
+    background-color: transparent;
+    border: none;
+    width: 44px;
+    color: #cccccc;
+    font-weight: bolder;
+    font-size: large;
+}
+
+#gridSizeInput, input[type="number"]:focus {
+    outline: none; /* Забезпечує відсутність обводки під час фокусу */
+}   
+
+/* Завжди видимі стрілки */
+#gridSizeInput, input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1; /* Робить стрілки завжди видимими */
+}
