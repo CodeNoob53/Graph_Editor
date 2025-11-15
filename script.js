@@ -180,6 +180,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const nodeRadius = 30;
 
+  // Функція оновлення стилю ребер
+  function updateEdgeStyle() {
+    cy.edges().forEach(edge => {
+      edge.style('target-arrow-shape', isDirected ? 'triangle' : 'none'); // Оновлення стилю стрілок
+    });
+  }
+
   // Функція для збереження стану графа в стек історії
   function saveHistory() {
     // Зберігаємо глибоку копію поточного стану графа
@@ -187,11 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
     undoStack.push(currentState);
     // Очищаємо стек redo після нової дії
     redoStack = [];
-  }
-
-  function setMode(mode) {
-    activeMode = mode;
-    selectedNodeId = null;
   }
 
   // Відображення масштабу
@@ -862,12 +864,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Graph directed:", isDirected);
   });
 
-  function updateEdgeStyle() {
-    cy.edges().forEach(edge => {
-      edge.style('target-arrow-shape', isDirected ? 'triangle' : 'none'); // Оновлення стилю стрілок
-    });
-  }
-
 
   const undoButton = document.getElementById('undo');
   undoButton && undoButton.addEventListener('click', () => {
@@ -1020,6 +1016,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       let startNodes = 0, endNodes = 0;
+      let hasInvalidNode = false;
 
       nodes.forEach(node => {
         const id = node.id();
@@ -1028,9 +1025,13 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (inDegree[id] - outDegree[id] === 1) {
           endNodes++;
         } else if (Math.abs(inDegree[id] - outDegree[id]) > 1) {
-          return "No Euler Trail or Circuit exists.";
+          hasInvalidNode = true;
         }
       });
+
+      if (hasInvalidNode) {
+        return "No Euler Trail or Circuit exists.";
+      }
 
       if (startNodes === 0 && endNodes === 0) {
         return "Euler Circuit exists (directed graph).";
@@ -1185,6 +1186,13 @@ document.addEventListener("DOMContentLoaded", () => {
               data: { source: edge.data.source, target: edge.data.target, ...edge.data }
             });
           });
+
+          // Оновлюємо nodeCount на основі імпортованих вузлів
+          const maxNodeNumber = Math.max(...graphData.nodes.map(node => {
+            const match = node.data.id.match(/^v(\d+)$/);
+            return match ? parseInt(match[1], 10) : -1;
+          }), -1);
+          nodeCount = maxNodeNumber + 1;
 
           // Оновлюємо стиль і функціонал після імпорту
           updateEdgeStyle();
