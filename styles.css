@@ -21,16 +21,20 @@ html, body {
 
 #AppContainer {
     display: flex;
-    align-items: center;
-    flex-direction: column;
+
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 20px;
 }
 
 .subcontainer {
+    margin-top: 20px;
     background-color: #252526;
     border: 1px solid #3c3c3c;
     padding: 10px 20px;
     box-shadow: rgba(0, 0, 0, 0.26) 0px 3px 6px, rgba(0, 0, 0, 0.33) 0px 3px 6px;
 }
+
 /* region Header */
 .graph_logo {
     display: flex;
@@ -145,8 +149,10 @@ html, body {
     border-radius: 2px;
     /* background-color: #252526;*/
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    position: relative; /* Забезпечує позиціонування над canvas */
-    z-index: 1; /* Гарантує, що граф буде над сіткою */
+    position: relative;
+    /* Забезпечує позиціонування над canvas */
+    z-index: 1;
+    /* Гарантує, що граф буде над сіткою */
 }
 
 
@@ -257,10 +263,14 @@ html, body {
     position: absolute;
     top: 0;
     left: 0;
-    pointer-events: none; /* Щоб сітка не перешкоджала взаємодії з графом */
-    width: 100%; /* Повна ширина контейнера */
-    height: 100%; /* Повна висота контейнера */
-    z-index: 0; /* Встановлює сітку позаду графа */
+    pointer-events: none;
+    /* Щоб сітка не перешкоджала взаємодії з графом */
+    width: 100%;
+    /* Повна ширина контейнера */
+    height: 100%;
+    /* Повна висота контейнера */
+    z-index: 0;
+    /* Встановлює сітку позаду графа */
 }
 
 #gridSizeInput {
@@ -388,5 +398,201 @@ input[type="number"]::-webkit-outer-spin-button {
     100% {
         opacity: 1;
     }
+}
+
+/* Приклад додаткових/оновлених стилів */
+
+/* Ліва панель з іконками (вертикально) */
+#leftToolbar {
+    position: absolute;
+    top: 0px;
+    /* трохи нижче шапки */
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    z-index: 10;
+    /* щоб кнопки були над canvas */
+}
+
+#leftToolbar button {
+    background-color: #3c3c3c71;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    z-index: 10;
+}
+
+#leftToolbar button img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+}
+
+#leftToolbar button:hover {
+    background-color: #ffffff3f;
+}
+
+/* Кнопка корзинки зліва знизу в editor */
+#clearGraphContainer {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 10;
+}
+
+#clearGraphContainer img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+}
+
+#clearGraphContainer button {
+    width: 44px;
+    height: 44px;
+    background-color: #3c3c3c;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#clearGraphContainer button:hover {
+    background-color: #505050;
+}
+
+/* Права панель зі «спойлерними» плитками */
+/* Сама панель праворуч */
+#rightPanel {
+    width: 22rem;
+    background-color: #252526;
+    border: 1px solid #3c3c3c;
+    margin-top: 20px;
+    box-shadow: rgba(0, 0, 0, 0.26) 0px 3px 6px, rgba(0, 0, 0, 0.33) 0px 3px 6px;
+}
+
+.rpHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: #50505036;
+    width: 100%;
+    padding: 5px;
+    border-bottom: solid 1px #3c3c3c;
+}
+
+.rpHeader img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+}
+
+#algoName {
+    font-size: 1.2rem;
+    color: #d4d4d4;
+    font-weight: bold;
+}
+
+.rpLogo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+}
+
+.rpContent {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+
+    margin-top: 20px;
+}
+.rpClose {
+    display: flex;
+    background-color: #3c3c3c;
+    cursor: pointer;
+    justify-content: center;
+    height: 30px;
+    width: 30px;
+    font-size: 1.2rem;
+    border: solid 1px #505050;
+    color: #d4d4d4;
+    align-items: center;
+    user-select: none;
+}
+
+.rpClose:hover {
+    background-color: #ff000093;
+}
+
+.rpClose:active {
+    background-color: #ff0000;
+    transform: scale(0.9);
+    transition: transform 0.1s;
+}
+
+/* Кнопки-плитки */
+.tileButton {
+    background-color: #3c3c3c;
+    color: #d4d4d4;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    text-align: left;
+    /* Можна left/center */
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.tileButton:hover {
+    background-color: #505050;
+}
+
+/* Прихований блок для спойлера */
+.spoilerContent {
+    display: none;
+    /* за замовчуванням не видимий */
+    padding: 10px;
+    background-color: #2d2d2d;
+    border: 1px solid #505050;
+    border-radius: 4px;
+}
+
+/* Приклад стилів для #pathInputs */
+#pathInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#pathInputs input {
+    padding: 5px;
+    background-color: #1e1e1e;
+    border: 1px solid #3c3c3c;
+    color: #d4d4d4;
+    border-radius: 2px;
+}
+
+#pathInputs button {
+    background-color: #3c3c3c;
+    border: none;
+    color: #d4d4d4;
+    padding: 6px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+#pathInputs button:hover {
+    background-color: #505050;
 }
 

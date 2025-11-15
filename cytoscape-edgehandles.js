@@ -337,66 +337,57 @@ function getEleJson(overrides, params, addedClasses) {
   return json;
 }
 
-function makeEdges() {
-  var preview = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-  var cy = this.cy,
-      options = this.options,
-      presumptiveTargets = this.presumptiveTargets,
-      previewEles = this.previewEles,
-      active = this.active;
-
-
-  var source = this.sourceNode;
-  var target = this.targetNode;
-  var classes = preview ? 'eh-preview' : '';
-  var added = cy.collection();
-  var canConnect = this.canConnect(target);
-
-  // can't make edges outside of regular gesture lifecycle
-  if (!active) {
+// Виправлений код для функції makeEdges
+function makeEdges(preview = false) {
+  const { cy, options, presumptiveTargets, previewEles, active } = this;
+  const source = this.sourceNode;
+  const target = this.targetNode;
+  const classes = preview ? 'eh-preview' : '';
+  let added = cy.collection();
+  
+  // Перевірка чи можемо з'єднати вершини
+  if (!active || !source || !target) {
     return;
   }
 
-  // must be able to connect
+  const canConnect = this.canConnect(target);
   if (!canConnect) {
     return;
   }
 
-  // detect cancel
+  // При відсутності цільової вершини видаляємо preview і емітимо cancel
   if (!target || target.size() === 0) {
     previewEles.remove();
-
     this.emit('cancel', this.mp(), source, presumptiveTargets);
-
     return;
   }
 
-  // just remove preview class if we already have the edges
-  if (!preview) {
+  // Якщо це не preview режим - просто видаляємо клас preview
+  if (!preview && previewEles.length > 0) {
     previewEles.removeClass('eh-preview').style('events', '');
-
     this.emit('complete', this.mp(), source, target, previewEles);
-
     return;
   }
 
-  var source2target = cy.add(getEleJson({
+  // Створюємо нове ребро
+  const edgeParams = this.edgeParams(target);
+  const source2target = cy.add({
     group: 'edges',
     data: {
       source: source.id(),
       target: target.id()
-    }
-  }, this.edgeParams(target), classes));
+    },
+    classes: classes,
+    ...edgeParams
+  });
 
   added = added.merge(source2target);
 
   if (preview) {
     this.previewEles = added;
-
     added.style('events', 'no');
   } else {
     added.style('events', '');
-
     this.emit('complete', this.mp(), source, target, added);
   }
 
@@ -421,66 +412,54 @@ function removePreview() {
   return this;
 }
 
+// Виправлений код для функції updateEdge 
 function updateEdge() {
-  var _this = this;
-
-  var sourceNode = this.sourceNode,
-      ghostNode = this.ghostNode,
-      cy = this.cy,
-      mx = this.mx,
-      my = this.my;
-
-  var x = mx;
-  var y = my;
-  var ghostEdge = void 0,
-      ghostEles = void 0;
-
-  // can't draw a line without having the starting node
+  const { sourceNode, ghostNode, cy, mx, my } = this;
+  
   if (!sourceNode) {
     return;
   }
 
+  // Створюємо ghost елементи, якщо їх ще немає
   if (!ghostNode || ghostNode.length === 0 || ghostNode.removed()) {
-    ghostEles = this.ghostEles = cy.collection();
-
-    cy.batch(function () {
-      ghostNode = _this.ghostNode = cy.add({
+    this.ghostEles = cy.collection();
+    
+    cy.batch(() => {
+      // Створюємо невидиму вершину для відображення лінії
+      this.ghostNode = cy.add({
         group: 'nodes',
         classes: 'eh-ghost eh-ghost-node',
-        position: {
-          x: 0,
-          y: 0
-        }
+        position: { x: mx, y: my }
       });
 
-      ghostNode.style({
-        'background-color': 'blue',
+      this.ghostNode.style({
+        'background-color': 'transparent',
         'width': 0.0001,
         'height': 0.0001,
         'opacity': 0,
         'events': 'no'
       });
 
-      var ghostEdgeParams = {};
-
-      ghostEdge = cy.add(assign({}, ghostEdgeParams, {
+      // Створюємо ребро від вихідної вершини до ghost вершини
+      const ghostEdge = cy.add({
         group: 'edges',
-        data: assign({}, ghostEdgeParams.data, {
+        data: {
           source: sourceNode.id(),
-          target: ghostNode.id()
-        }),
+          target: this.ghostNode.id()
+        },
         classes: 'eh-ghost eh-ghost-edge'
-      }));
+      });
 
       ghostEdge.style({
         'events': 'no'
       });
-    });
 
-    ghostEles.merge(ghostNode).merge(ghostEdge);
+      this.ghostEles.merge(this.ghostNode).merge(ghostEdge);
+    });
   }
 
-  ghostNode.position({ x: x, y: y });
+  // Оновлюємо позицію ghost вершини
+  this.ghostNode.position({ x: mx, y: my });
 
   return this;
 }
@@ -767,54 +746,34 @@ function snap() {
   return snapped;
 }
 
-function preview(target) {
-  var _this2 = this;
+// Виправлений код для функції preview
+function preview(target, allowHoverDelay = true) {
+  const { options, sourceNode, ghostNode, ghostEles, 
+          presumptiveTargets, previewEles, active } = this;
 
-  var allowHoverDelay = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-  var options = this.options,
-      sourceNode = this.sourceNode,
-      ghostNode = this.ghostNode,
-      ghostEles = this.ghostEles,
-      presumptiveTargets = this.presumptiveTargets,
-      previewEles = this.previewEles,
-      active = this.active;
+  if (!active || !sourceNode || target.same(ghostNode) || 
+      !this.canConnect(target) || target.same(this.targetNode)) {
+    return false;
+  }
 
-  var source = sourceNode;
-  var isGhost = target.same(ghostNode);
-  var noEdge = !this.canConnect(target);
-  var isExistingTgt = target.same(this.targetNode);
-
-  if (!active || isGhost || noEdge || isExistingTgt
-  // || (target.isParent())
-  ) {
-      return false;
-    }
-
+  // Видаляємо попередній preview
   if (this.targetNode.nonempty()) {
     this.unpreview(this.targetNode);
   }
 
   clearTimeout(this.previewTimeout);
 
-  var applyPreview = function applyPreview() {
-    _this2.targetNode = target;
-
+  const applyPreview = () => {
+    this.targetNode = target;
     presumptiveTargets.merge(target);
 
-    target.addClass('eh-presumptive-target');
-    target.addClass('eh-target');
-
-    _this2.emit('hoverover', _this2.mp(), source, target);
-
-    target.addClass('eh-preview');
-
+    target.addClass('eh-presumptive-target eh-target eh-preview');
     ghostEles.addClass('eh-preview-active');
     sourceNode.addClass('eh-preview-active');
     target.addClass('eh-preview-active');
 
-    _this2.makePreview();
-
-    _this2.emit('previewon', _this2.mp(), source, target, previewEles);
+    this.makePreview();
+    this.emit('previewon', this.mp(), sourceNode, target, previewEles);
   };
 
   if (allowHoverDelay && options.hoverDelay > 0) {

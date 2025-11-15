@@ -8,67 +8,61 @@ document.addEventListener("DOMContentLoaded", () => {
     zoom: 1.0,            // початковий зум (100%)
     style: [
       {
+
         selector: 'node',
         style: {
-          'background-color': '#5F8670',
+          'background-color': '#000000',
           'label': 'data(id)',
-          'width': 38,
-          'height': 38,
+          'width': '1.5em',
+          'height': '1.5em',
           'color': 'white',
           'text-valign': 'center',
           'text-halign': 'center',
-          'font-size': '26px',
-          'border-width': 1,
-          'border-color': '#005bb5',
+          'font-size': '1.5em',
+          'border-width': 3,
+          'border-color': '#E9E9E9',
           'border-style': 'solid',
-          // Параметри для активної зони
-          'padding': '5px', // Збільшення хітбокса на 50%
-
-          'events': 'yes', // Дозвіл на події
-        }
+          'padding': '10px', // Збільшення хітбокса на 50%
+          'events': 'yes',
+        },
       },
       {
         selector: 'edge',
         style: {
           'width': 3,
-          'line-color': '#6599ed',
-          'target-arrow-color': '#3676ff',
+          'line-color': '#FFFFFF',
+          'target-arrow-color': '#00AEFF',
           'target-arrow-shape': 'triangle',
           'curve-style': 'bezier',
-          'label': 'data(weight)',
-          'font-size': '12px',
-          'color': 'black',
-          'text-background-color': '#ffffff',
-          'text-background-opacity': 1,
-          'text-background-shape': 'roundrectangle',
-          'text-background-padding': '2px',
-          'text-border-color': '#ccc',
-          'text-border-width': '1px',
-          'text-border-style': 'solid',
-          'text-border-opacity': 1
-        }
+          'label': '',
+        },
       },
       {
         selector: 'edge[weight]', // Тільки для ребер із полем `weight`
         style: {
+          'target-arrow-color': '#FFAF36',
           'label': 'data(weight)',
-          'font-size': '12px',
-          'color': 'black',
-          'text-background-color': '#ffffff',
-          'text-background-opacity': 1,
-          'text-background-shape': 'roundrectangle'
-        }
+          'font-size': '1.2em',
+          'font-weight': 'bold',
+          'color': 'deepskyblue',
+          'text-background-color': '#1A1A1A',
+          'text-background-padding': '4px',
+          'text-border-color': '#FFFFFF',
+          'text-border-opacity': 0.7,
+          'text-border-width': '1px',
+          'text-background-opacity': 0.9,
+
+        },
       },
       {
-        selector: ".highlighted",
+        selector: '.highlighted',
         style: {
-          "background-color": "#ff5d00",
-          "line-color": "#ff5d00",
-          "target-arrow-color": "#f7ba80"
-        }
-      },
-      // some style for the extension
+          'background-color': '#1A1919',
+          'line-color': '#ff5d00',
+          'target-arrow-color': '#f7ba80',
 
+        },
+      },
       {
         selector: '.eh-handle',
         style: {
@@ -77,44 +71,40 @@ document.addEventListener("DOMContentLoaded", () => {
           'height': 12,
           'shape': 'ellipse',
           'overlay-opacity': 0,
-          'border-width': 12, // makes the handle easier to hit
-          'border-opacity': 0
-        }
+          'border-width': 12,
+          'border-opacity': 0,
+        },
       },
-
       {
         selector: '.eh-hover',
         style: {
-          'background-color': 'red'
-        }
+          'background-color': 'red',
+        },
       },
-
       {
         selector: '.eh-source',
         style: {
           'border-width': 2,
-          'border-color': 'red'
-        }
+          'border-color': 'red',
+        },
       },
-
       {
         selector: '.eh-target',
         style: {
           'border-width': 2,
-          'border-color': 'red'
-        }
+          'border-color': 'red',
+        },
       },
-
       {
         selector: '.eh-preview, .eh-ghost-edge',
         style: {
           'background-color': 'red',
-          'line-color': 'red',
+          'line-color': 'tomato',
           'target-arrow-color': 'red',
-          'source-arrow-color': 'red'
-        }
+          'source-arrow-color': 'red',
+          'opacity': 1,
+        },
       },
-
       {
         selector: '.eh-ghost-edge.eh-preview-active',
         style: {
@@ -126,18 +116,35 @@ document.addEventListener("DOMContentLoaded", () => {
         selector: '.active-node',
         style: {
           'background-color': 'black', // Золотий колір
-          'border-color': '#FF8C00',     // Темно-помаранчевий колір
-          'border-width': '2px',
+          'border-color': '#1BA4FF',     // Темно-помаранчевий колір
+          'border-width': '4px',
           'background-opacity': 0.8
         }
       },
       {
         selector: '.active-edge',
         style: {
-          'line-color': '#FFD700',
+          'line-color': '#FFBC65',
           'width': '4px',
-          'target-arrow-color': '#FFD700',
           'source-arrow-color': '#FFD700',
+          'opacity': 1
+        }
+      },
+      {
+        selector: 'node.selected',
+        style: {
+          'background-color': '#FFD700', // Золотий колір
+          'border-color': '#FFD700',     // Темно-помаранчевий колір
+          'border-width': '4px',
+          'background-opacity': 0.8
+        }
+      },
+      {
+        selector: 'edge.selected',
+        style: {
+          'line-color': '#FFF3AF',
+          'width': '6px',
+          'source-arrow-color': '#FDE594',
           'opacity': 1
         }
       }
@@ -147,26 +154,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateEdgeStyle();
 
-  const eh = cy.edgehandles({
-    snap: true, // Вмикає прив'язку
-    handleNodes: 'node', // Ноди, на яких працює хендл
-    handleSize: 10, // Розмір хендла
-    handleColor: 'red', // Колір хендла
-    hoverDelay: 150, // Затримка перед показом хендла
-    edgeType: (sourceNode, targetNode) => {
-      return isDirected ? 'flat' : 'node';
-    },
-    edgeParams: (sourceNode, targetNode) => {
-      return {
-        data: {
-          source: sourceNode.id(),
-          target: targetNode.id(),
-        },
-        classes: isDirected ? 'directed' : '',
-      };
-    },
-  });
+  cy.on('ehstart', () => {
+    console.log('Edge handle started');
+});
 
+cy.on('ehstop', () => {
+    console.log('Edge handle stopped');
+});
 
   let nodeCount = 0;
   let gridSize = 50;
@@ -180,14 +174,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const nodeRadius = 30;
 
-  // Функція для збереження стану графа в стек історії
-  function saveHistory() {
-    // Зберігаємо глибоку копію поточного стану графа
-    const currentState = JSON.parse(JSON.stringify(cy.json()));
-    undoStack.push(currentState);
-    // Очищаємо стек redo після нової дії
-    redoStack = [];
+// Ініціалізація edgehandles
+const eh = cy.edgehandles({
+  edgeType: () => 'flat', // Уникаємо створення проміжних вузлів
+  complete: (_sourceNode, _targetNode, addedEles) => {
+      const tempNodes = addedEles.filter(ele => ele.isNode() && ele.hasClass('eh-preview'));
+      tempNodes.forEach(node => {
+          console.log('Removing temporary node:', node.id());
+          cy.remove(node); // Видаляємо тимчасові вузли
+      });
+
+      const finalEdges = addedEles.filter(ele => ele.isEdge());
+      finalEdges.forEach(edge => {
+          console.log('Final edge created:', edge.data());
+      });
   }
+});
+
+// Додавання обробника події ehcomplete
+cy.on('ehcomplete', (event, sourceNode, targetNode, addedEdge) => {
+  console.log('ehcomplete event triggered');
+  console.log('Source Node:', sourceNode.id());
+  console.log('Target Node:', targetNode.id());
+  console.log('Added Edge:', addedEdge.data());
+
+  // Remove all temporary elements
+  cy.elements('.eh-ghost, .eh-preview-active').remove();
+
+  // Save history after finalizing the edge
+  saveHistory();
+});
+
+
+
+// Функція збереження історії
+function saveHistory() {
+  const currentState = JSON.parse(JSON.stringify(cy.json()));
+
+  // Перевірка та ініціалізація елементів
+  const elements = currentState.elements || { nodes: [], edges: [] };
+  const nodes = elements.nodes || [];
+  const edges = elements.edges || [];
+
+  // Фільтрація прев'ю елементів
+  const filteredNodes = nodes.filter(node => {
+      const classes = node.classes || '';
+      return !classes.includes('eh-ghost') && !classes.includes('eh-preview-active');
+  });
+
+  const filteredEdges = edges.filter(edge => {
+      const classes = edge.classes || '';
+      return !classes.includes('eh-ghost') && !classes.includes('eh-ghost-edge');
+  });
+
+  // Оновлення стеку undo
+  const newState = { elements: { nodes: filteredNodes, edges: filteredEdges } };
+  undoStack.push(newState);
+  redoStack = [];
+
+  // Логування стеків
+  console.log('Saving History:');
+  console.log('Filtered Nodes:', filteredNodes);
+  console.log('Filtered Edges:', filteredEdges);
+  console.log('Undo Stack:', JSON.parse(JSON.stringify(undoStack)));
+  console.log('Redo Stack (cleared):', redoStack);
+}
+
+
 
   function setMode(mode) {
     activeMode = mode;
@@ -638,6 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (activeMode !== "edge") return; // Створення ребер дозволено лише в режимі "edge"
 
     const nodeId = event.target.id();
+
     console.log(`Tapped on node ${nodeId}`);
 
   });
@@ -652,7 +706,32 @@ document.addEventListener("DOMContentLoaded", () => {
     edge.addClass('active-edge');
   });
 
+  cy.on('add', 'edge', (event) => {
+    const edge = event.target.data();
 
+    // Ensure the edge is valid and final
+    const sourceExists = cy.getElementById(edge.source).length > 0;
+    const targetExists = cy.getElementById(edge.target).length > 0;
+    const isPreview = cy.$(`edge[source="${edge.source}"][target="${edge.target}"].eh-preview`).length > 0;
+
+    if (!sourceExists || !targetExists || isPreview) {
+        console.log('Skipped adding invalid or preview edge:', edge);
+        return;
+    }
+
+    const duplicateEdge = cy.edges().some(existingEdge =>
+        (existingEdge.data('source') === edge.source && existingEdge.data('target') === edge.target) ||
+        (!isDirected && existingEdge.data('source') === edge.target && existingEdge.data('target') === edge.source)
+    );
+
+    if (duplicateEdge) {
+        console.log('Skipped adding duplicate edge:', edge);
+        return;
+    }
+
+    console.log('Edge added:', edge);
+    saveHistory(); // Update history after valid edge addition
+});
 
   // Прив’язка до сітки після перетягування вузла
   cy.on('free', 'node', (evt) => {
@@ -701,6 +780,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.key === "Enter") saveValue();
     });
   });
+
 
   cy.on('mouseover', 'node', (event) => {
     if (activeMode === "edge") {
@@ -871,29 +951,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const undoButton = document.getElementById('undo');
   undoButton && undoButton.addEventListener('click', () => {
-    if (undoStack.length > 1) {
-      // Поточний стан
-      const currentState = JSON.parse(JSON.stringify(cy.json()));
-      // Переносимо поточний стан у redo
-      redoStack.push(currentState);
-      // Відновлюємо попередній стан з undo
-      undoStack.pop();
-      const previousState = undoStack[undoStack.length - 1];
-      cy.json(previousState);
-    }
+      if (undoStack.length > 1) {
+          console.log('Undo operation triggered');
+          console.log('Undo Stack BEFORE:', JSON.parse(JSON.stringify(undoStack)));
+          console.log('Redo Stack BEFORE:', JSON.parse(JSON.stringify(redoStack)));
+  
+          // Поточний стан
+          const currentState = JSON.parse(JSON.stringify(cy.json()));
+          redoStack.push(currentState);
+  
+          // Відновлення попереднього стану
+          const previousState = undoStack.pop();
+          cy.elements().remove(); // Очищаємо поточний граф
+          cy.json(previousState);
+  
+          console.log('Undo Stack AFTER:', JSON.parse(JSON.stringify(undoStack)));
+          console.log('Redo Stack AFTER:', JSON.parse(JSON.stringify(redoStack)));
+      } else {
+          console.log('Undo operation skipped: Not enough history.');
+      }
   });
+  
 
   const redoButton = document.getElementById('redo');
   redoButton && redoButton.addEventListener('click', () => {
-    if (redoStack.length > 0) {
-      const nextState = redoStack.pop();
-      // Поточний стан у undo
-      const currentState = JSON.parse(JSON.stringify(cy.json()));
-      undoStack.push(currentState);
-
-      cy.json(nextState);
-    }
+      if (redoStack.length > 0) {
+          console.log('Redo operation triggered');
+          console.log('Undo Stack BEFORE:', JSON.parse(JSON.stringify(undoStack)));
+          console.log('Redo Stack BEFORE:', JSON.parse(JSON.stringify(redoStack)));
+  
+          // Поточний стан
+          const currentState = JSON.parse(JSON.stringify(cy.json()));
+          undoStack.push(currentState);
+  
+          // Відновлення наступного стану
+          const nextState = redoStack.pop();
+          cy.elements().remove(); // Очищаємо поточний граф
+          cy.json(nextState);
+  
+          console.log('Undo Stack AFTER:', JSON.parse(JSON.stringify(undoStack)));
+          console.log('Redo Stack AFTER:', JSON.parse(JSON.stringify(redoStack)));
+      } else {
+          console.log('Redo operation skipped: No future history.');
+      }
   });
+  
 
   const getInfoButton = document.getElementById("getInfo");
   getInfoButton && getInfoButton.addEventListener("click", () => {
@@ -1294,6 +1396,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.getElementById('overlay');
     overlay.classList.remove('active');
   }
+
+  const spoilerToggleBtn = document.getElementById("spoilerToggle");
+  const spoilerContent = document.getElementById("pathSpoilerContent");
+
+  // При кліку міняємо "display" з none на block і навпаки
+  spoilerToggleBtn.addEventListener("click", () => {
+    if (spoilerContent.style.display === "none" || !spoilerContent.style.display) {
+      spoilerContent.style.display = "block";
+    } else {
+      spoilerContent.style.display = "none";
+    }
+  });
 
   // Зберігаємо початковий стан (порожній граф) для можливості undo
   saveHistory();
