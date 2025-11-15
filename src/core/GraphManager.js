@@ -1,6 +1,14 @@
 /**
  * GraphManager - клас для управління графом Cytoscape
  */
+import cytoscape from 'cytoscape';
+import edgehandles from 'cytoscape-edgehandles';
+import cxtmenu from 'cytoscape-cxtmenu';
+
+// Реєстрація плагінів
+cytoscape.use(edgehandles);
+cytoscape.use(cxtmenu);
+
 export class GraphManager {
   constructor(containerId, config = {}) {
     this.containerId = containerId;
