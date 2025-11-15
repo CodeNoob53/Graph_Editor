@@ -1,7 +1,7 @@
 /**
  * GraphManager - клас для управління графом Cytoscape
  */
-class GraphManager {
+export class GraphManager {
   constructor(containerId, config = {}) {
     this.containerId = containerId;
     this.nodeCount = 0;

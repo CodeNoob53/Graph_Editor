@@ -2,6 +2,14 @@
  * main.js - головний файл для ініціалізації додатку Graph Editor
  */
 
+// Імпорт модулів
+import { GraphManager } from './core/GraphManager.js';
+import { GraphAlgorithms } from './algorithms/GraphAlgorithms.js';
+import { HistoryManager } from './managers/HistoryManager.js';
+import { GridManager } from './managers/GridManager.js';
+import { ImportExportManager } from './managers/ImportExportManager.js';
+import { UIManager } from './managers/UIManager.js';
+
 document.addEventListener("DOMContentLoaded", () => {
   // Ініціалізація GraphManager
   const graphManager = new GraphManager('cy', {

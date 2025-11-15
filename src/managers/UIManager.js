@@ -1,7 +1,7 @@
 /**
  * UIManager - клас для управління користувацьким інтерфейсом та взаємодією
  */
-class UIManager {
+export class UIManager {
   constructor(graphManager, gridManager, historyManager, algorithms, importExportManager) {
     this.graphManager = graphManager;
     this.gridManager = gridManager;

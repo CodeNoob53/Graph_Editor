@@ -1,5 +1,14 @@
 # Graph Editor - Архітектура проєкту
 
+## Система модулів
+
+Проєкт використовує **ES6 модулі (import/export)** для організації коду. Це забезпечує:
+- ✅ Явні залежності між модулями
+- ✅ Власну область видимості для кожного модуля
+- ✅ Сумісність з сучасними bundlers (webpack, vite, rollup)
+- ✅ Відсутність глобального забруднення namespace
+- ✅ Tree-shaking для оптимізації розміру bundle
+
 ## Структура проєкту
 
 ```
@@ -108,9 +117,34 @@ Graph_Editor/
 - GraphAlgorithms
 - ImportExportManager
 
+## ES6 Module System
+
+### Імпорти в main.js:
+```javascript
+import { GraphManager } from './core/GraphManager.js';
+import { GraphAlgorithms } from './algorithms/GraphAlgorithms.js';
+import { HistoryManager } from './managers/HistoryManager.js';
+import { GridManager } from './managers/GridManager.js';
+import { ImportExportManager } from './managers/ImportExportManager.js';
+import { UIManager } from './managers/UIManager.js';
+```
+
+### Експорти в модулях:
+```javascript
+export class GraphManager { ... }
+export class GraphAlgorithms { ... }
+// і т.д.
+```
+
+### Підключення в HTML:
+```html
+<script type="module" src="src/main.js"></script>
+```
+
 ## Потік даних
 
 1. **Ініціалізація (main.js):**
+   - Імпорт всіх необхідних модулів через ES6 import
    - Створення екземплярів всіх класів
    - Передача залежностей між класами
    - Збереження початкового стану

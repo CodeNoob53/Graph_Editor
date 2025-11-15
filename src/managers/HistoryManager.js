@@ -1,7 +1,7 @@
 /**
  * HistoryManager - клас для управління історією змін (undo/redo)
  */
-class HistoryManager {
+export class HistoryManager {
   constructor(graphManager) {
     this.graphManager = graphManager;
     this.undoStack = [];

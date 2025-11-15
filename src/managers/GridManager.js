@@ -1,7 +1,7 @@
 /**
  * GridManager - клас для управління сіткою
  */
-class GridManager {
+export class GridManager {
   constructor(cy, canvasId, config = {}) {
     this.cy = cy;
     this.canvas = document.getElementById(canvasId);

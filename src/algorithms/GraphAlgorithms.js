@@ -1,7 +1,7 @@
 /**
  * GraphAlgorithms - клас з алгоритмами для роботи з графами
  */
-class GraphAlgorithms {
+export class GraphAlgorithms {
   constructor(cy, isDirected = true) {
     this.cy = cy;
     this.isDirected = isDirected;

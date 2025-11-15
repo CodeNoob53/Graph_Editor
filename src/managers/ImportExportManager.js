@@ -1,7 +1,7 @@
 /**
  * ImportExportManager - клас для імпорту та експорту графів
  */
-class ImportExportManager {
+export class ImportExportManager {
   constructor(graphManager) {
     this.graphManager = graphManager;
   }
