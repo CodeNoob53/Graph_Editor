@@ -2,7 +2,18 @@ import { calculatePrimMST } from '../algorithms/mst.js';
 import { findShortestPath } from '../algorithms/shortestPath.js';
 import { findMinWeightedPathForFourVertices } from '../algorithms/minWeightedPath.js';
 import { generateAllSpanningTrees } from '../algorithms/spanningTrees.js';
+import { findEulerTrailAndCircuit } from '../algorithms/euler.js';
+import { findHamiltonianCycles } from '../algorithms/hamiltonian.js';
+import { depthFirstSearch, breadthFirstSearch, checkConnectivity, detectCycle } from '../algorithms/traversal.js';
 import { highlightPath, highlightEdges, highlightNodesAndEdges, clearHighlights } from '../utils/highlight.js';
+import {
+  generateCompleteGraph,
+  generateTree,
+  generateRandomGraph,
+  generateCycle,
+  generateBipartiteGraph,
+  generateStarGraph
+} from '../utils/graphGenerator.js';
 
 export class UIManager {
   constructor(cy, state, historyManager, edgeManager) {
@@ -21,6 +32,7 @@ export class UIManager {
     this.setupImportExportButtons();
     this.setupAlgorithmButtons();
     this.setupUIToggleButtons();
+    this.setupGraphGenerator();
   }
 
   setMode(mode) {
@@ -240,6 +252,248 @@ export class UIManager {
         `;
       }
     });
+
+    const eulerCalculationButton = document.getElementById('eulerCalculation');
+    eulerCalculationButton?.addEventListener('click', () => {
+      const result = findEulerTrailAndCircuit(this.cy, this.state.isDirected);
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.stats ? `<p><small>Тип графу: ${result.graphType}</small></p>` : ''}
+          </div>
+        `;
+      } else {
+        const icon = result.type === 'circuit' ? '🔄' : '📍';
+        const typeLabel = result.type === 'circuit' ? 'Ейлерів цикл' : 'Ейлерів шлях';
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ ${icon} ${typeLabel}</h3>
+            <p><strong>Результат:</strong> ${result.message}</p>
+            <p>${result.details}</p>
+            <p><small>Тип графу: ${result.graphType}</small></p>
+          </div>
+        `;
+      }
+    });
+
+    const hamiltonianCalculationButton = document.getElementById('hamiltonianCalculation');
+    hamiltonianCalculationButton?.addEventListener('click', () => {
+      // Показуємо loader
+      const overlay = document.getElementById('overlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+      }
+
+      // Використовуємо setTimeout щоб UI встиг оновитися
+      setTimeout(() => {
+        const result = findHamiltonianCycles(this.cy, this.state.isDirected);
+
+        // Приховуємо loader
+        if (overlay) {
+          overlay.style.display = 'none';
+        }
+
+        if (result.error) {
+          document.getElementById('info').innerHTML = `
+            <div style="color: #ff6b6b;">
+              <h3>❌ ${result.error}</h3>
+              <p>${result.details}</p>
+              ${result.stats ? `<p><small>Тип графу: ${result.graphType}</small></p>` : ''}
+            </div>
+          `;
+        } else {
+          const cyclesList = result.formattedCycles.join('<br>');
+          const additionalInfo = result.additionalCycles > 0
+            ? `<p><small>...та ще ${result.additionalCycles} циклів</small></p>`
+            : '';
+
+          document.getElementById('info').innerHTML = `
+            <div style="color: #51cf66;">
+              <h3>✓ 🔄 Гамільтонові цикли</h3>
+              <p><strong>Знайдено циклів:</strong> ${result.count}</p>
+              <p><strong>Довжина циклу:</strong> ${result.stats.cycleLength} вершин</p>
+              <p><strong>Перші ${result.showingFirst} циклів:</strong></p>
+              <p style="font-family: monospace; font-size: 0.9em;">${cyclesList}</p>
+              ${additionalInfo}
+              <p><small>Тип графу: ${result.graphType}</small></p>
+            </div>
+          `;
+        }
+      }, 100);
+    });
+
+    // DFS Algorithm
+    const runDFSButton = document.getElementById('runDFS');
+    runDFSButton?.addEventListener('click', () => {
+      const startNode = document.getElementById('traversalStartNode').value.trim();
+
+      if (!startNode) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ffa94d;">
+            <h3>⚠️ Введіть початкову вершину</h3>
+            <p>Будь ласка, введіть ID вершини для початку обходу</p>
+          </div>
+        `;
+        return;
+      }
+
+      const result = depthFirstSearch(this.cy, startNode, this.state.isDirected);
+
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.availableNodes ? `<p><small>Доступні вершини: ${result.availableNodes.join(', ')}</small></p>` : ''}
+          </div>
+        `;
+      } else {
+        const arrow = this.state.isDirected ? '→' : '—';
+        const completeness = result.isComplete
+          ? '✓ Обхід повний (всі вершини відвідані)'
+          : `⚠️ Обхід неповний (відвідано ${result.visitedCount} з ${result.totalNodes} вершин)`;
+
+        // Підсвічуємо шлях обходу
+        highlightPath(this.cy, result.traversalOrder);
+
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>🔍 ${result.algorithm}</h3>
+            <p><strong>Початкова вершина:</strong> ${result.startNode}</p>
+            <p><strong>Порядок обходу:</strong> ${result.traversalOrder.join(` ${arrow} `)}</p>
+            <p><strong>Відвідано вершин:</strong> ${result.visitedCount} / ${result.totalNodes}</p>
+            <p>${completeness}</p>
+            <p><small>Тип графу: ${result.graphType}</small></p>
+          </div>
+        `;
+      }
+    });
+
+    // BFS Algorithm
+    const runBFSButton = document.getElementById('runBFS');
+    runBFSButton?.addEventListener('click', () => {
+      const startNode = document.getElementById('traversalStartNode').value.trim();
+
+      if (!startNode) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ffa94d;">
+            <h3>⚠️ Введіть початкову вершину</h3>
+            <p>Будь ласка, введіть ID вершини для початку обходу</p>
+          </div>
+        `;
+        return;
+      }
+
+      const result = breadthFirstSearch(this.cy, startNode, this.state.isDirected);
+
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.availableNodes ? `<p><small>Доступні вершини: ${result.availableNodes.join(', ')}</small></p>` : ''}
+          </div>
+        `;
+      } else {
+        const arrow = this.state.isDirected ? '→' : '—';
+        const completeness = result.isComplete
+          ? '✓ Обхід повний (всі вершини відвідані)'
+          : `⚠️ Обхід неповний (відвідано ${result.visitedCount} з ${result.totalNodes} вершин)`;
+
+        // Форматуємо вершини по рівнях
+        const levelsList = Object.entries(result.levelGroups)
+          .map(([level, nodes]) => `Рівень ${level}: ${nodes.join(', ')}`)
+          .join('<br>');
+
+        // Підсвічуємо шлях обходу
+        highlightPath(this.cy, result.traversalOrder);
+
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>🔍 ${result.algorithm}</h3>
+            <p><strong>Початкова вершина:</strong> ${result.startNode}</p>
+            <p><strong>Порядок обходу:</strong> ${result.traversalOrder.join(` ${arrow} `)}</p>
+            <p><strong>Відвідано вершин:</strong> ${result.visitedCount} / ${result.totalNodes}</p>
+            <p><strong>Максимальний рівень:</strong> ${result.maxLevel}</p>
+            <p>${completeness}</p>
+            <div style="margin-top: 10px; padding: 10px; background: rgba(81, 207, 102, 0.1); border-radius: 4px;">
+              <p><strong>Розподіл по рівнях:</strong></p>
+              <p style="font-family: monospace; font-size: 0.9em;">${levelsList}</p>
+            </div>
+            <p><small>Тип графу: ${result.graphType}</small></p>
+          </div>
+        `;
+      }
+    });
+
+    // Check Connectivity
+    const checkConnectivityButton = document.getElementById('checkConnectivity');
+    checkConnectivityButton?.addEventListener('click', () => {
+      const result = checkConnectivity(this.cy, this.state.isDirected);
+
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
+      } else {
+        const icon = result.isConnected ? '✓' : '❌';
+        const color = result.isConnected ? '#51cf66' : '#ffa94d';
+
+        let componentsInfo = '';
+        if (!result.isConnected && result.componentsList) {
+          componentsInfo = `
+            <div style="margin-top: 10px; padding: 10px; background: rgba(255, 169, 77, 0.1); border-radius: 4px;">
+              <p><strong>Компоненти зв'язності:</strong></p>
+              ${result.componentsList.map((comp, i) =>
+                `<p style="font-family: monospace; font-size: 0.9em;">Компонента ${i + 1}: {${comp.join(', ')}}</p>`
+              ).join('')}
+            </div>
+          `;
+        }
+
+        document.getElementById('info').innerHTML = `
+          <div style="color: ${color};">
+            <h3>${icon} Перевірка зв'язності</h3>
+            <p><strong>Результат:</strong> ${result.message}</p>
+            <p><strong>Кількість вершин:</strong> ${result.totalNodes}</p>
+            <p><strong>Кількість компонент:</strong> ${result.components}</p>
+            ${componentsInfo}
+          </div>
+        `;
+      }
+    });
+
+    // Detect Cycle
+    const detectCycleButton = document.getElementById('detectCycle');
+    detectCycleButton?.addEventListener('click', () => {
+      const result = detectCycle(this.cy, this.state.isDirected);
+
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
+      } else {
+        const icon = result.hasCycle ? '🔄' : '✓';
+        const color = result.hasCycle ? '#ffa94d' : '#51cf66';
+
+        document.getElementById('info').innerHTML = `
+          <div style="color: ${color};">
+            <h3>${icon} Виявлення циклів</h3>
+            <p><strong>Результат:</strong> ${result.message}</p>
+            <p><strong>Тип графу:</strong> ${result.graphType}</p>
+            ${result.hasCycle ? '<p>⚠️ Граф містить один або більше циклів</p>' : '<p>✓ Граф не містить циклів</p>'}
+          </div>
+        `;
+      }
+    });
   }
 
   setupUIToggleButtons() {
@@ -253,6 +507,16 @@ export class UIManager {
       }
     });
 
+    const traversalSpoilerToggle = document.getElementById('traversalSpoilerToggle');
+    const traversalSpoilerContent = document.getElementById('traversalSpoilerContent');
+    traversalSpoilerToggle?.addEventListener('click', () => {
+      if (traversalSpoilerContent.style.display === 'none' || !traversalSpoilerContent.style.display) {
+        traversalSpoilerContent.style.display = 'block';
+      } else {
+        traversalSpoilerContent.style.display = 'none';
+      }
+    });
+
     const rpClose = document.querySelector('.rpClose');
     const rightPanel = document.getElementById('rightPanel');
     rpClose?.addEventListener('click', () => {
@@ -262,5 +526,199 @@ export class UIManager {
         rightPanel.style.display = 'none';
       }
     });
+  }
+
+  setupGraphGenerator() {
+    const modal = document.getElementById('graphGeneratorModal');
+    const generateButton = document.getElementById('generateGraph');
+    const closeButton = document.querySelector('.modal-close');
+    const cancelButton = document.getElementById('cancelGenerate');
+    const confirmButton = document.getElementById('confirmGenerate');
+    const graphTypeSelect = document.getElementById('graphType');
+    const nodeCountGroup = document.getElementById('nodeCountGroup');
+    const bipartiteGroup = document.getElementById('bipartiteGroup');
+    const edgeProbabilityGroup = document.getElementById('edgeProbabilityGroup');
+
+    // Відкриття модального вікна
+    generateButton?.addEventListener('click', () => {
+      modal.classList.add('active');
+    });
+
+    // Закриття модального вікна
+    const closeModal = () => {
+      modal.classList.remove('active');
+    };
+
+    closeButton?.addEventListener('click', closeModal);
+    cancelButton?.addEventListener('click', closeModal);
+
+    // Закриття при кліку поза модальним вікном
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Зміна видимості полів в залежності від типу графа
+    graphTypeSelect?.addEventListener('change', () => {
+      const graphType = graphTypeSelect.value;
+
+      // Приховуємо всі додаткові поля
+      nodeCountGroup.style.display = 'block';
+      bipartiteGroup.style.display = 'none';
+      edgeProbabilityGroup.style.display = 'none';
+
+      // Показуємо специфічні поля
+      if (graphType === 'bipartite') {
+        nodeCountGroup.style.display = 'none';
+        bipartiteGroup.style.display = 'block';
+      } else if (graphType === 'random') {
+        edgeProbabilityGroup.style.display = 'block';
+      }
+    });
+
+    // Генерація графа
+    confirmButton?.addEventListener('click', () => {
+      const graphType = document.getElementById('graphType').value;
+      const nodeCount = parseInt(document.getElementById('nodeCount').value);
+      const minWeight = parseInt(document.getElementById('minWeight').value);
+      const maxWeight = parseInt(document.getElementById('maxWeight').value);
+      const clearBefore = document.getElementById('clearBeforeGenerate').checked;
+
+      // Валідація
+      if (minWeight > maxWeight) {
+        alert('Мінімальна вага не може бути більшою за максимальну!');
+        return;
+      }
+
+      // Очищення графа якщо потрібно
+      if (clearBefore) {
+        this.cy.elements().remove();
+        this.state.nodeCount = 0;
+      }
+
+      try {
+        // Генерація графа в залежності від типу
+        switch (graphType) {
+          case 'complete':
+            generateCompleteGraph(
+              this.cy,
+              nodeCount,
+              this.state.isDirected,
+              minWeight,
+              maxWeight,
+              this.state.gridSize,
+              this.state
+            );
+            break;
+
+          case 'tree':
+            generateTree(
+              this.cy,
+              nodeCount,
+              this.state.isDirected,
+              minWeight,
+              maxWeight,
+              this.state.gridSize,
+              this.state
+            );
+            break;
+
+          case 'random':
+            const edgeProbability = parseFloat(document.getElementById('edgeProbability').value);
+            generateRandomGraph(
+              this.cy,
+              nodeCount,
+              edgeProbability,
+              this.state.isDirected,
+              minWeight,
+              maxWeight,
+              this.state.gridSize,
+              this.state
+            );
+            break;
+
+          case 'cycle':
+            generateCycle(
+              this.cy,
+              nodeCount,
+              this.state.isDirected,
+              minWeight,
+              maxWeight,
+              this.state.gridSize,
+              this.state
+            );
+            break;
+
+          case 'bipartite':
+            const leftNodes = parseInt(document.getElementById('leftNodes').value);
+            const rightNodes = parseInt(document.getElementById('rightNodes').value);
+            generateBipartiteGraph(
+              this.cy,
+              leftNodes,
+              rightNodes,
+              this.state.isDirected,
+              minWeight,
+              maxWeight,
+              this.state.gridSize,
+              this.state
+            );
+            break;
+
+          case 'star':
+            generateStarGraph(
+              this.cy,
+              nodeCount,
+              this.state.isDirected,
+              minWeight,
+              maxWeight,
+              this.state.gridSize,
+              this.state
+            );
+            break;
+
+          default:
+            alert('Невідомий тип графа!');
+            return;
+        }
+
+        // Оновлюємо стилі ребер
+        this.updateEdgeStyle();
+
+        // Зберігаємо в історію
+        this.historyManager.saveHistory();
+
+        // Показуємо інформацію
+        const nodes = this.cy.nodes();
+        const edges = this.cy.edges();
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Граф успішно згенеровано</h3>
+            <p><strong>Тип:</strong> ${this.getGraphTypeName(graphType)}</p>
+            <p><strong>Вершин:</strong> ${nodes.length}</p>
+            <p><strong>Ребер:</strong> ${edges.length}</p>
+            <p><strong>Орієнтований:</strong> ${this.state.isDirected ? 'Так' : 'Ні'}</p>
+          </div>
+        `;
+
+        // Закриваємо модальне вікно
+        closeModal();
+      } catch (error) {
+        alert('Помилка при генерації графа: ' + error.message);
+        console.error(error);
+      }
+    });
+  }
+
+  getGraphTypeName(type) {
+    const types = {
+      'complete': 'Повний граф',
+      'tree': 'Дерево',
+      'random': 'Випадковий граф',
+      'cycle': 'Цикл',
+      'bipartite': 'Двочастковий граф',
+      'star': 'Зірка'
+    };
+    return types[type] || type;
   }
 }

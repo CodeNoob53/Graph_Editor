@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Graph Constructor</title>
     <link rel="icon" href="/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <!-- Шапка з логотипом та основними кнопками (Import, Undo, Redo, Export) -->
@@ -83,6 +84,29 @@
           <button id="hamiltonianCalculation" class="tileButton">
             Calculate Hamiltonian Cycles
           </button>
+
+          <!-- Спойлер: DFS та BFS -->
+          <button id="traversalSpoilerToggle" class="tileButton">
+            Graph Traversal (DFS & BFS)
+          </button>
+          <div id="traversalSpoilerContent" class="spoilerContent">
+            <div id="traversalInputs">
+              <input
+                type="text"
+                id="traversalStartNode"
+                placeholder="Enter Start Node ID"
+              />
+              <button id="runDFS">Run DFS</button>
+              <button id="runBFS">Run BFS</button>
+            </div>
+          </div>
+
+          <button id="checkConnectivity" class="tileButton">
+            Check Graph Connectivity
+          </button>
+          <button id="detectCycle" class="tileButton">
+            Detect Cycles
+          </button>
         </div>
       </div>
 
@@ -128,6 +152,9 @@
             <button id="clearGraph" title="Clear Graph">
               <img src="/icons/trash.svg" alt="Clear" />
             </button>
+            <button id="generateGraph" title="Generate Graph">
+              <img src="/icons/node.svg" alt="Generate" />
+            </button>
           </div>
           <canvas
             id="gridCanvas"
@@ -141,6 +168,67 @@
         <div id="info"></div>
       </div>
     </div>
+    <!-- Modal для генерації графів -->
+    <div id="graphGeneratorModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Генерація графа</h2>
+          <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="graphType">Тип графа:</label>
+            <select id="graphType">
+              <option value="complete">Повний граф (Complete)</option>
+              <option value="tree">Дерево (Tree)</option>
+              <option value="random">Випадковий граф (Random)</option>
+              <option value="cycle">Цикл (Cycle)</option>
+              <option value="bipartite">Двочастковий (Bipartite)</option>
+              <option value="star">Зірка (Star)</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="nodeCountGroup">
+            <label for="nodeCount">Кількість вершин:</label>
+            <input type="number" id="nodeCount" value="5" min="2" max="26" />
+          </div>
+
+          <div class="form-group" id="bipartiteGroup" style="display: none;">
+            <label for="leftNodes">Вершин зліва:</label>
+            <input type="number" id="leftNodes" value="3" min="1" max="13" />
+            <label for="rightNodes">Вершин справа:</label>
+            <input type="number" id="rightNodes" value="3" min="1" max="13" />
+          </div>
+
+          <div class="form-group" id="edgeProbabilityGroup" style="display: none;">
+            <label for="edgeProbability">Ймовірність ребра (0-1):</label>
+            <input type="number" id="edgeProbability" value="0.3" min="0" max="1" step="0.1" />
+          </div>
+
+          <div class="form-group">
+            <label for="minWeight">Мінімальна вага ребра:</label>
+            <input type="number" id="minWeight" value="1" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label for="maxWeight">Максимальна вага ребра:</label>
+            <input type="number" id="maxWeight" value="10" min="1" />
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="clearBeforeGenerate" checked />
+              Очистити граф перед генерацією
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelGenerate" class="btn-secondary">Скасувати</button>
+          <button id="confirmGenerate" class="btn-primary">Генерувати</button>
+        </div>
+      </div>
+    </div>
+
     <div id="overlay">
       <div class="loader-content">
         <div class="loader">
