@@ -47,9 +47,13 @@ export const cytoscapeStyles = [
   {
     selector: '.highlighted',
     style: {
-      'background-color': '#1A1919',
+      'background-color': '#ff5d00',
       'line-color': '#ff5d00',
-      'target-arrow-color': '#f7ba80',
+      'target-arrow-color': '#ff5d00',
+      'width': 5,
+      'border-color': '#ffaf36',
+      'border-width': '5px',
+      'z-index': 999
     },
   },
   {

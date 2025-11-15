@@ -64,6 +64,7 @@ function analyzeDirectedGraph(cy, nodes, edges) {
   let startNodes = 0; // вершини з outDegree - inDegree = 1
   let endNodes = 0;   // вершини з inDegree - outDegree = 1
   let balanced = 0;   // вершини з inDegree = outDegree
+  let invalidDegree = false; // прапорець для перевірки неправильних степенів
 
   nodes.forEach(node => {
     const id = node.id();
@@ -77,9 +78,18 @@ function analyzeDirectedGraph(cy, nodes, edges) {
       endNodes++;
     } else {
       // Якщо різниця більше 1, Ейлерового шляху не існує
-      return;
+      invalidDegree = true;
     }
   });
+
+  // Перевірка на неправильні степені
+  if (invalidDegree) {
+    return {
+      error: "Ейлерів шлях/цикл не існує",
+      details: "Знайдено вершини з різницею степенів більше 1",
+      graphType: 'орієнтований'
+    };
+  }
 
   // Перевіряємо зв'язність
   if (!isWeaklyConnected(cy, nodes, edges)) {
