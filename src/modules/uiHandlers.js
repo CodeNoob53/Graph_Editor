@@ -133,40 +133,61 @@ export class UIManager {
   setupAlgorithmButtons() {
     const calculateMSTButton = document.getElementById('calculateMST');
     calculateMSTButton?.addEventListener('click', () => {
-      const result = calculatePrimMST(this.cy);
+      const result = calculatePrimMST(this.cy, this.state.isDirected);
       if (result.error) {
-        document.getElementById('info').innerHTML = `<p>Error: ${result.error}</p>`;
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
       } else {
         highlightEdges(this.cy, result.mst);
-        const totalWeight = result.mst.reduce((sum, edge) => sum + edge.weight, 0);
         document.getElementById('info').innerHTML = `
-          <h3>Minimum Spanning Tree</h3>
-          <p>Total Weight: ${totalWeight}</p>
-          <p>Edges: ${result.mst.length}</p>
+          <div style="color: #51cf66;">
+            <h3>✓ Мінімальне остовне дерево (MST)</h3>
+            <p><strong>Загальна вага:</strong> ${result.totalWeight}</p>
+            <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
+            <p><strong>Кількість вершин:</strong> ${result.nodeCount}</p>
+          </div>
         `;
       }
     });
 
     const findPathButton = document.getElementById('findPath');
     findPathButton?.addEventListener('click', () => {
-      const source = document.getElementById('sourceNode').value;
-      const target = document.getElementById('targetNode').value;
+      const source = document.getElementById('sourceNode').value.trim();
+      const target = document.getElementById('targetNode').value.trim();
 
       if (!source || !target) {
-        alert('Please enter both source and target nodes');
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ffa94d;">
+            <h3>⚠️ Введіть вершини</h3>
+            <p>Будь ласка, введіть вихідну та цільову вершини</p>
+          </div>
+        `;
         return;
       }
 
-      const result = findShortestPath(this.cy, source, target);
-      if (result.distance === Infinity) {
-        document.getElementById('info').innerHTML = `<p>No path found between ${source} and ${target}</p>`;
+      const result = findShortestPath(this.cy, source, target, this.state.isDirected);
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
       } else {
         highlightPath(this.cy, result.path);
+        const arrow = this.state.isDirected ? '→' : '—';
         document.getElementById('info').innerHTML = `
-          <h3>Shortest Path</h3>
-          <p>From: ${source} To: ${target}</p>
-          <p>Distance: ${result.distance}</p>
-          <p>Path: ${result.path.join(' → ')}</p>
+          <div style="color: #51cf66;">
+            <h3>✓ Найкоротший шлях (${result.graphType})</h3>
+            <p><strong>Від:</strong> ${source} <strong>До:</strong> ${target}</p>
+            <p><strong>Відстань:</strong> ${result.distance}</p>
+            <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
+            <p><strong>Шлях:</strong> ${result.path.join(` ${arrow} `)}</p>
+          </div>
         `;
       }
     });
@@ -174,8 +195,14 @@ export class UIManager {
     const findMinPathButton = document.getElementById('findMinPath');
     findMinPathButton?.addEventListener('click', () => {
       const result = findMinWeightedPathForFourVertices(this.cy, this.state.isDirected);
-      if (typeof result === 'string') {
-        document.getElementById('info').innerHTML = `<p>${result}</p>`;
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.checkedCombinations ? `<p><small>Перевірено комбінацій: ${result.checkedCombinations}</small></p>` : ''}
+          </div>
+        `;
       } else {
         highlightNodesAndEdges(this.cy, result.bestPath,
           result.bestPath.slice(1).map((node, i) => ({
@@ -192,11 +219,26 @@ export class UIManager {
 
     const listSpanningTreesButton = document.getElementById('listSpanningTrees');
     listSpanningTreesButton?.addEventListener('click', () => {
-      const trees = generateAllSpanningTrees(this.cy);
-      document.getElementById('info').innerHTML = `
-        <h3>All Spanning Trees</h3>
-        <p>Total count: ${trees.length}</p>
-      `;
+      const result = generateAllSpanningTrees(this.cy, this.state.isDirected);
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.checkedCombinations ? `<p><small>Перевірено комбінацій: ${result.checkedCombinations}</small></p>` : ''}
+          </div>
+        `;
+      } else {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Всі остовні дерева</h3>
+            <p><strong>Знайдено дерев:</strong> ${result.count}</p>
+            <p><strong>Вершин в графі:</strong> ${result.nodeCount}</p>
+            <p><strong>Ребер в кожному дереві:</strong> ${result.edgesPerTree}</p>
+            <p><small>Перевірено комбінацій: ${result.totalCombinations}</small></p>
+          </div>
+        `;
+      }
     });
   }
 

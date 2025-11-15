@@ -18,20 +18,20 @@ export class KeyboardManager {
         return;
       }
 
-      // Ctrl+Z - Undo
-      if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+      // Ctrl+Z - Undo (використовуємо e.code для незалежності від мови)
+      if (e.ctrlKey && e.code === 'KeyZ' && !e.shiftKey) {
         e.preventDefault();
         this.historyManager.undo();
       }
 
       // Ctrl+Y або Ctrl+Shift+Z - Redo
-      if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) {
+      if ((e.ctrlKey && e.code === 'KeyY') || (e.ctrlKey && e.shiftKey && e.code === 'KeyZ')) {
         e.preventDefault();
         this.historyManager.redo();
       }
 
       // Delete або Backspace - видалити вибрані елементи
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (e.code === 'Delete' || e.code === 'Backspace') {
         const selected = this.cy.$(':selected');
         if (selected.length > 0) {
           e.preventDefault();
@@ -41,14 +41,14 @@ export class KeyboardManager {
       }
 
       // Escape - скасувати виділення
-      if (e.key === 'Escape') {
+      if (e.code === 'Escape') {
         this.cy.$(':selected').unselect();
         this.cy.elements().removeClass('active-node');
         this.cy.elements().removeClass('active-edge');
       }
 
       // Ctrl+A - вибрати всі елементи
-      if (e.ctrlKey && e.key === 'a') {
+      if (e.ctrlKey && e.code === 'KeyA') {
         e.preventDefault();
         this.cy.elements().select();
       }

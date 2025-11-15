@@ -1,18 +1,49 @@
 import { getCombinations } from '../utils/combinatorics.js';
 
-export function findMinWeightedPathForFourVertices(cy, isDirected) {
+/**
+ * Знаходить мінімальний зважений шлях через 4 вершини
+ * Шукає комбінацію з 4 вершин (u, v, x, y) таку, що шлях u→v→x→y має мінімальну вагу
+ *
+ * @param {Object} cy - Екземпляр Cytoscape
+ * @param {boolean} isDirected - Чи є граф орієнтованим
+ * @returns {Object|string} Результат з шляхом та вагою або повідомлення про помилку
+ */
+export function findMinWeightedPathForFourVertices(cy, isDirected = false) {
   if (!cy || typeof cy.nodes !== "function") {
-    return "Error: Graph is not initialized properly.";
+    return {
+      error: "Граф не ініціалізовано",
+      details: "Екземпляр Cytoscape не знайдено або пошкоджено"
+    };
   }
 
   const nodes = cy.nodes().map(node => node.id());
-  if (nodes.length < 4) return "Not enough vertices (minimum 4 required).";
+
+  // Перевірка: чи достатньо вершин
+  if (nodes.length < 4) {
+    return {
+      error: "Недостатньо вершин",
+      details: `Для знаходження шляху через 4 вершини потрібно мінімум 4 вершини. Поточна кількість: ${nodes.length}`,
+      required: 4,
+      current: nodes.length
+    };
+  }
 
   const edges = cy.edges().map(edge => ({
     source: edge.data('source'),
     target: edge.data('target'),
     weight: parseFloat(edge.data('weight')) || Infinity,
   }));
+
+  // Перевірка: чи всі ребра мають вагу
+  const edgesWithoutWeight = edges.filter(e => e.weight === Infinity);
+  if (edgesWithoutWeight.length > 0) {
+    return {
+      error: "Деякі ребра не мають ваги",
+      details: `Знайдено ${edgesWithoutWeight.length} ребер без ваги. Встановіть вагу для всіх ребер (подвійний клік на ребро).`,
+      edgesWithoutWeight: edgesWithoutWeight.length,
+      totalEdges: edges.length
+    };
+  }
 
   const graph = {};
   nodes.forEach(node => graph[node] = []);
@@ -68,7 +99,14 @@ export function findMinWeightedPathForFourVertices(cy, isDirected) {
   }
 
   if (!bestPath) {
-    return "No valid path found.";
+    return {
+      error: "Шлях не знайдено",
+      details: isDirected
+        ? "Не існує орієнтованого шляху через 4 вершини з заданими ребрами. Перевірте що всі необхідні вершини з'єднані."
+        : "Не існує шляху через 4 вершини. Граф може бути не зв'язним або ребер недостатньо для з'єднання всіх вершин.",
+      graphType: isDirected ? 'орієнтований' : 'неорієнтований',
+      checkedCombinations: combinations.length
+    };
   }
 
   const formattedPath = bestPath.map((node, i) =>
@@ -80,6 +118,11 @@ export function findMinWeightedPathForFourVertices(cy, isDirected) {
   return {
     bestPath,
     minWeight,
+    vertexCount: 4,
+    segmentCount: 3,
+    checkedCombinations: combinations.length,
+    success: true,
+    graphType: isDirected ? 'орієнтований' : 'неорієнтований',
     formattedMessage: `
       $\\text{Minimum Weighted Path for 4 Vertices:}$<br>
       $\\text{Path: } \\{ ${formattedPath} \\}$<br>
