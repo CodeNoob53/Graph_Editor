@@ -585,12 +585,6 @@ export class UIManager {
       const maxWeight = parseInt(document.getElementById('maxWeight').value);
       const clearBefore = document.getElementById('clearBeforeGenerate').checked;
 
-      // Валідація
-      if (minWeight > maxWeight) {
-        alert('Мінімальна вага не може бути більшою за максимальну!');
-        return;
-      }
-
       // Очищення графа якщо потрібно
       if (clearBefore) {
         this.cy.elements().remove();
@@ -598,10 +592,12 @@ export class UIManager {
       }
 
       try {
+        let result;
+
         // Генерація графа в залежності від типу
         switch (graphType) {
           case 'complete':
-            generateCompleteGraph(
+            result = generateCompleteGraph(
               this.cy,
               nodeCount,
               this.state.isDirected,
@@ -613,7 +609,7 @@ export class UIManager {
             break;
 
           case 'tree':
-            generateTree(
+            result = generateTree(
               this.cy,
               nodeCount,
               this.state.isDirected,
@@ -626,7 +622,7 @@ export class UIManager {
 
           case 'random':
             const edgeProbability = parseFloat(document.getElementById('edgeProbability').value);
-            generateRandomGraph(
+            result = generateRandomGraph(
               this.cy,
               nodeCount,
               edgeProbability,
@@ -639,7 +635,7 @@ export class UIManager {
             break;
 
           case 'cycle':
-            generateCycle(
+            result = generateCycle(
               this.cy,
               nodeCount,
               this.state.isDirected,
@@ -653,7 +649,7 @@ export class UIManager {
           case 'bipartite':
             const leftNodes = parseInt(document.getElementById('leftNodes').value);
             const rightNodes = parseInt(document.getElementById('rightNodes').value);
-            generateBipartiteGraph(
+            result = generateBipartiteGraph(
               this.cy,
               leftNodes,
               rightNodes,
@@ -666,7 +662,7 @@ export class UIManager {
             break;
 
           case 'star':
-            generateStarGraph(
+            result = generateStarGraph(
               this.cy,
               nodeCount,
               this.state.isDirected,
@@ -678,33 +674,55 @@ export class UIManager {
             break;
 
           default:
-            alert('Невідомий тип графа!');
+            document.getElementById('info').innerHTML = `
+              <div style="color: #ff6b6b;">
+                <h3>❌ Невідомий тип графа</h3>
+                <p>Виберіть один з доступних типів</p>
+              </div>
+            `;
             return;
         }
 
+        // Перевірка результату
+        if (result && result.error) {
+          // Показуємо помилку
+          document.getElementById('info').innerHTML = `
+            <div style="color: #ff6b6b;">
+              <h3>❌ ${result.error}</h3>
+              <p>${result.details}</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Успішна генерація
         // Оновлюємо стилі ребер
         this.updateEdgeStyle();
 
         // Зберігаємо в історію
         this.historyManager.saveHistory();
 
-        // Показуємо інформацію
-        const nodes = this.cy.nodes();
-        const edges = this.cy.edges();
+        // Показуємо інформацію про успіх
         document.getElementById('info').innerHTML = `
           <div style="color: #51cf66;">
             <h3>✓ Граф успішно згенеровано</h3>
             <p><strong>Тип:</strong> ${this.getGraphTypeName(graphType)}</p>
-            <p><strong>Вершин:</strong> ${nodes.length}</p>
-            <p><strong>Ребер:</strong> ${edges.length}</p>
+            <p><strong>Вершин:</strong> ${result.nodes}</p>
+            <p><strong>Ребер:</strong> ${result.edges}</p>
             <p><strong>Орієнтований:</strong> ${this.state.isDirected ? 'Так' : 'Ні'}</p>
+            ${result.message ? `<p><em>${result.message}</em></p>` : ''}
           </div>
         `;
 
         // Закриваємо модальне вікно
         closeModal();
       } catch (error) {
-        alert('Помилка при генерації графа: ' + error.message);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ Помилка при генерації графа</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
         console.error(error);
       }
     });
