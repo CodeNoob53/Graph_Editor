@@ -4,21 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Graph Constructor</title>
-    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <link rel="icon" href="/icons/favicon.ico" type="image/x-icon" />
   </head>
   <body>
     <!-- Шапка з логотипом та основними кнопками (Import, Undo, Redo, Export) -->
     <div id="header">
       <div class="graph_logo">
-        <img src="assets/icons/graph_logo.svg" />
+        <img src="/icons/graph_logo.svg" />
         <div id="appName">Graph Editor</div>
       </div>
 
       <div id="headerControls">
         <label>
-          <img src="assets/icons/upload.svg" alt="Import" />
+          <img src="/icons/upload.svg" alt="Import" />
           Import
           <input
             type="file"
@@ -28,13 +26,13 @@
           />
         </label>
         <button id="undo">
-          <img src="assets/icons/undo.svg" alt="Undo" /> Undo
+          <img src="/icons/undo.svg" alt="Undo" /> Undo
         </button>
         <button id="redo">
-          <img src="assets/icons/redo.svg" alt="Redo" /> Redo
+          <img src="/icons/redo.svg" alt="Redo" /> Redo
         </button>
         <button id="exportGraph">
-          <img src="assets/icons/download.svg" alt="Export" /> Export
+          <img src="/icons/download.svg" alt="Export" /> Export
         </button>
       </div>
     </div>
@@ -43,7 +41,7 @@
       <div id="rightPanel">
         <div class="rpHeader">
           <div class="rpLogo">
-            <img src="assets/icons/algo_logo.svg" />
+            <img src="/icons/algo_logo.svg" />
             <div id="algoName">Algorithms</div>
           </div>
           <div class="rpClose">✖</div>
@@ -58,7 +56,7 @@
           <button id="listSpanningTrees" class="tileButton">
             List All Spanning Trees
           </button>
-  
+
           <!-- Спойлер: кнопка + прихований блок для pathInputs -->
           <button id="spoilerToggle" class="tileButton">
             Shortest Path (Spoiler)
@@ -78,7 +76,7 @@
               <button id="findPath">Find Path</button>
             </div>
           </div>
-  
+
           <button id="eulerCalculation" class="tileButton">
             Calculate Euler Trails and Circuits
           </button>
@@ -116,19 +114,19 @@
           <!-- Ліва панель з іконками (вертикально) -->
           <div id="leftToolbar">
             <button id="mouseArrow" title="Select">
-              <img src="assets/icons/arrow.svg" alt="Arrow" />
+              <img src="/icons/arrow.svg" alt="Arrow" />
             </button>
             <button id="addNode" title="Add Node">
-              <img src="assets/icons/node.svg" alt="Add Node" />
+              <img src="/icons/node.svg" alt="Add Node" />
             </button>
             <button id="addEdge" title="Add Edge">
-              <img src="assets/icons/edge.svg" alt="Add Edge" />
+              <img src="/icons/edge.svg" alt="Add Edge" />
             </button>
           </div>
           <!-- Кнопка очистити граф, розміщена зліва знизу -->
           <div id="clearGraphContainer">
             <button id="clearGraph" title="Clear Graph">
-              <img src="assets/icons/trash.svg" alt="Clear" />
+              <img src="/icons/trash.svg" alt="Clear" />
             </button>
           </div>
           <canvas
@@ -187,9 +185,6 @@
         },
       };
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
-    <script src="cytoscape-edgehandles.js"></script>
-    <script src="cytoscape-cxtmenu.js"></script>
-    <script src="script.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

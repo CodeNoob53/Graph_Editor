@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Old files from migration (backup)
+index.old.html
+cytoscape-cxtmenu.js
+cytoscape-edgehandles.js
+# Commented out to keep in repo as backup
+# script.js
+# styles.css (root)
