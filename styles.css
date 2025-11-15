@@ -1,392 +1,397 @@
-/**Нормализация блочної моделі*/
+/**
+ * Graph Editor - Main Stylesheet
+ * Оптимізований з CSS змінними та BEM methodology
+ */
+
+/* ==================== CSS ЗМІННІ ==================== */
+:root {
+  /* Кольори теми (VS Code Dark) */
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #252526;
+  --color-bg-tertiary: #2d2d2d;
+  --color-border: #3c3c3c;
+  --color-text: #d4d4d4;
+  --color-text-secondary: #cccccc;
+
+  /* Кольори інтерактивних елементів */
+  --color-button-bg: #3c3c3c;
+  --color-button-hover: #505050;
+  --color-button-active: #606060;
+
+  /* Сітка */
+  --grid-line-color: rgba(90, 90, 90, 0.13);
+
+  /* Розміри */
+  --header-height: 40px;
+  --graph-width: 800px;
+  --graph-height: 600px;
+  --border-radius: 2px;
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 20px;
+
+  /* Шрифти */
+  --font-family: Consolas, "Courier New", monospace;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 26px;
+  --font-size-xl: 34px;
+
+  /* Тіні */
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.26) 0px 3px 6px, rgba(0, 0, 0, 0.33) 0px 3px 6px;
+
+  /* Анімації */
+  --transition-fast: 0.3s;
+}
+
+/* ==================== RESET ==================== */
 *,
 ::before,
 ::after {
-    box-sizing: border-box;
-}
-
-:root {
-    --grid-line-color: rgba(90, 90, 90, 0.13);
+  box-sizing: border-box;
 }
 
 html, body {
-    margin: 0;
-    padding: 0;
-    font-family: Consolas, "Courier New", monospace;
-    background-color: #1e1e1e;
-    /* Темний фон, як у VS Code */
-    color: #d4d4d4;
-    /* Світло-сірий текст */
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text);
 }
 
+/* ==================== LAYOUT - старі ID для сумісності ==================== */
 #AppContainer {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .subcontainer {
-    background-color: #252526;
-    border: 1px solid #3c3c3c;
-    padding: 10px 20px;
-    box-shadow: rgba(0, 0, 0, 0.26) 0px 3px 6px, rgba(0, 0, 0, 0.33) 0px 3px 6px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  box-shadow: var(--shadow-lg);
 }
-/* region Header */
+
+/* ==================== HEADER ==================== */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: var(--color-bg-secondary);
+  padding: 0 var(--spacing-sm);
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--spacing-md);
+}
+
 .graph_logo {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 #header img {
-    filter: brightness(0) invert(1);
-    /* З чорного в білий */
+  filter: brightness(0) invert(1);
 }
 
-#header {
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    background-color: #252526;
-    /* Темно-сірий колір панелі, як у VS Code */
-    padding: 0 10px;
-    height: 40px;
-    border-bottom: 1px solid #3c3c3c;
-    gap: 20px;
-    /* Лінія поділу */
-}
-
-/* Назва застосунку */
 #appName {
-    font-size: 14px;
-    color: #d4d4d4;
-    font-weight: bold;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  font-weight: bold;
 }
 
-/* Контейнер для кнопок у хедері */
 #headerControls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 #headerControls button,
 #headerControls input[type="file"] {
-    background-color: #3c3c3c;
-    /* Кнопки у стилі VS Code */
-    border: none;
-    color: #d4d4d4;
-    font-size: 12px;
-    padding: 5px 8px;
-    border-radius: 2px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  background-color: var(--color-button-bg);
+  border: none;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) 8px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: background-color 0.2s;
 }
 
-#headerControls button:hover {
-    background-color: #505050;
+#headerControls button:hover,
+#headerControls label:hover {
+  background-color: var(--color-button-hover);
 }
 
-#headerControls button:active {
-    background-color: #606060;
-}
-
-#headerControls input[type="file"] {
-    padding: 5px;
-    cursor: pointer;
+#headerControls button:active,
+#headerControls label:active {
+  background-color: var(--color-button-active);
 }
 
 #headerControls label {
-    background-color: #3c3c3c;
-    padding: 5px 8px;
-    border-radius: 2px;
-    cursor: pointer;
-    font-size: 12px;
-    color: #d4d4d4;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  background-color: var(--color-button-bg);
+  padding: var(--spacing-xs) 8px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
-#headerControls label:hover {
-    background-color: #505050;
-}
-
-#headerControls label:active {
-    background-color: #606060;
-}
-
-/* endregion */
-
-/* region Основні стилі панелей та елементів */
+/* ==================== CONTROLS ==================== */
 #controls {
-    margin: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
+  margin: var(--spacing-md);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-sm);
 }
 
 #controls button img {
-    vertical-align: middle;
-    width: 16px;
-    height: 16px;
-    margin-right: 5px;
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--spacing-xs);
 }
-
-/* Робоча зона графа */
-#cy {
-    width: 800px;
-    height: 600px;
-    border: 1px solid #3c3c3c;
-    border-radius: 2px;
-    /* background-color: #252526;*/
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    position: relative; /* Забезпечує позиціонування над canvas */
-    z-index: 1; /* Гарантує, що граф буде над сіткою */
-}
-
-
-/* Інформаційна панель */
-#info {
-    margin-top: 20px;
-    width: 800px;
-    padding: 20px;
-    background-color: #1e1e1e;
-    border: 1px solid #3c3c3c;
-    border-radius: 2px;
-    font-size: 14px;
-    word-wrap: break-word;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    color: #d4d4d4;
-}
-
-/* region Стилі для графічних елементів cytoscape */
-#editor {
-    margin-top: 10px;
-    position: relative;
-    /* Щоб можна було позиціонувати zoomDisplay відносно editor */
-    width: 800px;
-    /* Ширина так само як #cy */
-    height: 600px;
-    /* Висота так само як #cy */
-}
-
-/* endregion */
-
-/* region Адаптивність */
-@media (max-width: 900px) {
-    #cy, #info {
-        width: 90%;
-    }
-}
-
-@media (max-width: 600px) {
-    #cy {
-        height: 400px;
-    }
-
-    button {
-        font-size: 12px;
-    }
-
-    #info {
-        font-size: 12px;
-    }
-}
-
-/* endregion */
-
-/* Відображення масштабу */
-#zoomDisplay {
-    position: absolute;
-    top: 0px;
-    /* Відступ згори */
-    right: 0px;
-    /* Відступ справа */
-    padding: 5px 10px;
-    background-color: rgba(0, 0, 0, 0.288);
-    color: white;
-    border-radius: 0px 0px 0px 5px;
-    font-size: 14px;
-    z-index: 1000;
-}
-
-/* Вводи для шляху */
-#pathInputs {
-    margin-top: 10px;
-    display: flex;
-    gap: 10px;
-}
-
-#pathInputs input {
-    padding: 5px;
-    font-size: 14px;
-    background-color: #2d2d2d;
-    color: #d4d4d4;
-    border: 1px solid #3c3c3c;
-    border-radius: 2px;
-}
-
-#pathInputs button {
-    padding: 5px 10px;
-    font-size: 14px;
-    border-radius: 2px;
-    background-color: #3c3c3c;
-    color: #d4d4d4;
-    border: none;
-    cursor: pointer;
-}
-
-#pathInputs button:hover {
-    background-color: #505050;
-}
-
-/* endregion */
 
 #gridControls {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-}
-
-#gridCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none; /* Щоб сітка не перешкоджала взаємодії з графом */
-    width: 100%; /* Повна ширина контейнера */
-    height: 100%; /* Повна висота контейнера */
-    z-index: 0; /* Встановлює сітку позаду графа */
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
 }
 
 #gridSizeInput {
-    padding: 2px;
-    direction: none;
-    background-color: transparent;
-    border: none;
-    width: 44px;
-    color: #cccccc;
-    font-weight: bolder;
-    font-size: large;
+  padding: 2px;
+  background-color: transparent;
+  border: none;
+  width: 44px;
+  color: var(--color-text-secondary);
+  font-weight: bolder;
+  font-size: large;
 }
 
-#gridSizeInput, input[type="number"]:focus {
-    outline: none;
-    /* Забезпечує відсутність обводки під час фокусу */
+#gridSizeInput:focus,
+input[type="number"]:focus {
+  outline: none;
 }
 
-/* Завжди видимі стрілки */
-#gridSizeInput, input[type="number"]::-webkit-inner-spin-button,
+#gridSizeInput::-webkit-inner-spin-button,
+#gridSizeInput::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
-    opacity: 1;
-    /* Робить стрілки завжди видимими */
+  opacity: 1;
 }
 
-/* Оверлей на всю сторінку */
+/* ==================== GRAPH ==================== */
+#cy {
+  width: var(--graph-width);
+  height: var(--graph-height);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 1;
+}
+
+#editor {
+  margin-top: var(--spacing-sm);
+  position: relative;
+  width: var(--graph-width);
+  height: var(--graph-height);
+}
+
+#gridCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+#zoomDisplay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(0, 0, 0, 0.288);
+  color: white;
+  border-radius: 0 0 0 var(--spacing-xs);
+  font-size: var(--font-size-md);
+  z-index: 1000;
+}
+
+/* ==================== INFO PANEL ==================== */
+#info {
+  margin-top: var(--spacing-md);
+  width: var(--graph-width);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-md);
+  word-wrap: break-word;
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+/* ==================== INPUTS ==================== */
+#pathInputs {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+#pathInputs input {
+  padding: var(--spacing-xs);
+  font-size: var(--font-size-md);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+}
+
+#pathInputs button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-md);
+  border-radius: var(--border-radius);
+  background-color: var(--color-button-bg);
+  color: var(--color-text);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#pathInputs button:hover {
+  background-color: var(--color-button-hover);
+}
+
+/* ==================== LOADER ==================== */
 #overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(30, 30, 30, 0.9);
-    /* напівпрозорий темний фон */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    /* поверх усього контенту */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(30, 30, 30, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
 }
 
-/* Коли додаємо клас "active" до #overlay, показуємо його */
 #overlay.active {
-    opacity: 1;
-    visibility: visible;
+  opacity: 1;
+  visibility: visible;
 }
 
 .loader-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Стилі спінера */
 .loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
 }
 
 .spinner {
-    width: 200px;
-    height: 200px;
-    animation: rotation 0.95s linear infinite;
+  width: 200px;
+  height: 200px;
+  animation: rotation 0.95s linear infinite;
 }
 
 .path {
-    stroke-dasharray: 100;
-    stroke-dashoffset: 20;
-    stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 20;
+  stroke-linecap: round;
 }
 
-@keyframes rotation {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Текст під спінером */
 .loader-text {
-    text-align: center;
-    font-family: Consolas, "Courier New", monospace;
-    color: #ffffff;
+  text-align: center;
+  font-family: var(--font-family);
+  color: #ffffff;
 }
 
 .loader-text .title {
-    font-size: 34px;
-    margin-bottom: 10px;
-    animation: pulse 1.5s infinite;
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-sm);
+  animation: pulse 1.5s infinite;
 }
 
 .loader-text .subtitle {
-    font-size: 26px;
-    color: #cccccc;
-    animation: fade 2s infinite;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  animation: fade 2s infinite;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes rotation {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.6;
-    }
-
-    100% {
-        opacity: 1;
-    }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 @keyframes fade {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.4;
-    }
-
-    100% {
-        opacity: 1;
-    }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 900px) {
+  :root {
+    --graph-width: 90%;
+  }
+
+  #cy,
+  #info {
+    width: 90%;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --graph-height: 400px;
+  }
+
+  #cy {
+    height: 400px;
+  }
+
+  button {
+    font-size: var(--font-size-sm);
+  }
+
+  #info {
+    font-size: var(--font-size-sm);
+  }
+}
