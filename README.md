@@ -1,20 +1,41 @@
 # Graph Editor
 
-Сучасний редактор графів, побудований на **Cytoscape.js 3.33.1** та **Vite**.
+Сучасний редактор графів, побудований на **Cytoscape.js 3.33.1** та **Vite** з об'єктно-орієнтованою архітектурою.
 
 ## Особливості
 
-- **Модульна архітектура ES6**: Повністю переписаний з використанням ES6 модулів
-- **Vite**: Швидка розробка та оптимізована збірка
-- **Cytoscape.js 3.33.1**: Найновіша версія бібліотеки візуалізації графів
-- **Розширення**: Інтеграція `cytoscape-edgehandles` та `cytoscape-cxtmenu` через npm
-- **Алгоритми**: MST (Prim), найкоротший шлях (Dijkstra), spanning trees та інші
+- **🎯 ООП архітектура**: Побудовано на ES6 класах для кращої організації коду
+- **⚡ Vite**: Швидка розробка та оптимізована збірка
+- **📊 Cytoscape.js 3.33.1**: Найновіша версія бібліотеки візуалізації графів
+- **🔌 Розширення**: Інтеграція `cytoscape-edgehandles` та `cytoscape-cxtmenu` через npm
+- **🧮 Алгоритми**: MST (Prim), найкоротший шлях (Dijkstra), spanning trees та інші
+- **💾 Розумна історія**: Оптимізоване збереження undo/redo (тільки важливі дані)
+- **🎨 Сітка та snap-to-grid**: Вирівнювання вершин по сітці
+- **📱 Адаптивний UI**: Зручний інтерфейс для роботи з графами
+
+## Архітектура
+
+### Класи (ООП структура)
+
+- **GraphEditor** - головний клас, координує всі менеджери
+- **HistoryManager** - управління історією (undo/redo) з оптимізацією пам'яті
+- **EdgeManager** - управління створенням та валідацією ребер
+- **EventManager** - обробка всіх подій Cytoscape
+- **UIManager** - управління UI та алгоритмами
+- **GridManager** - управління сіткою та snap-to-grid
+- **ZoomManager** - відображення масштабу
+- **KeyboardManager** - клавіатурні скорочення (Ctrl+Z, Ctrl+Y, Delete, тощо)
+
+📚 **Детальна документація:**
+- [CLASS_STRUCTURE.md](./CLASS_STRUCTURE.md) - Повний опис класової архітектури
+- [HISTORY_MANAGER.md](./HISTORY_MANAGER.md) - Документація системи історії
 
 ## Структура проєкту
 
 ```
-├── public/               # Статичні ресурси (іконки, зображення)
+├── public/               # Статичні ресурси
 ├── src/
+│   ├── GraphEditor.js    # 🎯 Головний клас
 │   ├── algorithms/       # Алгоритми графів
 │   │   ├── mst.js
 │   │   ├── shortestPath.js
@@ -23,22 +44,23 @@
 │   ├── config/          # Конфігурація Cytoscape
 │   │   ├── cytoscapeConfig.js
 │   │   └── cytoscapeStyles.js
-│   ├── modules/         # Основні модулі додатку
-│   │   ├── eventHandlers.js
-│   │   ├── edgeHandles.js
-│   │   ├── uiHandlers.js
-│   │   ├── gridManager.js
-│   │   └── zoomDisplay.js
-│   ├── utils/           # Допоміжні функції
-│   │   ├── combinatorics.js
+│   ├── modules/         # Класи-менеджери
+│   │   ├── eventHandlers.js    # EventManager
+│   │   ├── edgeHandles.js      # EdgeManager
+│   │   ├── uiHandlers.js       # UIManager
+│   │   ├── gridManager.js      # GridManager
+│   │   ├── zoomDisplay.js      # ZoomManager
+│   │   └── keyboardManager.js  # KeyboardManager ⌨️
+│   ├── utils/           # Утиліти
+│   │   ├── history.js         # HistoryManager 💾
 │   │   ├── grid.js
 │   │   ├── highlight.js
-│   │   └── history.js
+│   │   └── combinatorics.js
 │   ├── main.js          # Точка входу
 │   └── styles.css       # Стилі
-├── index.html           # HTML шаблон
-├── vite.config.js       # Конфігурація Vite
-└── package.json         # Залежності та скрипти
+├── index.html           # HTML
+├── test-history.html    # Тести для HistoryManager
+└── package.json         # Залежності
 ```
 
 ## Встановлення

@@ -1,27 +1,44 @@
 import { drawGrid } from '../utils/grid.js';
 
-export function setupGridManager(cy, state) {
-  const gridCanvas = document.getElementById('gridCanvas');
+export class GridManager {
+  constructor(cy, state) {
+    this.cy = cy;
+    this.state = state;
+    this.gridCanvas = document.getElementById('gridCanvas');
+    this.toggleSnapElement = document.getElementById('toggleSnap');
+    this.gridSizeInput = document.getElementById('gridSizeInput');
 
-  cy.on('render', () => {
-    if (state.snapEnabled) {
-      drawGrid(cy, gridCanvas, state.gridSize);
-    } else {
-      const ctx = gridCanvas.getContext('2d');
-      ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
-    }
-  });
+    this.init();
+  }
 
-  document.getElementById('toggleSnap')?.addEventListener('change', (e) => {
-    state.snapEnabled = e.target.checked;
-    cy.emit('render');
-  });
+  init() {
+    this.setupRenderListener();
+    this.setupEventListeners();
+  }
 
-  document.getElementById('gridSizeInput')?.addEventListener('change', (e) => {
-    const val = parseInt(e.target.value, 10);
-    if (!isNaN(val) && val > 0) {
-      state.gridSize = val;
-      cy.emit('render');
-    }
-  });
+  setupRenderListener() {
+    this.cy.on('render', () => {
+      if (this.state.snapEnabled) {
+        drawGrid(this.cy, this.gridCanvas, this.state.gridSize);
+      } else {
+        const ctx = this.gridCanvas.getContext('2d');
+        ctx.clearRect(0, 0, this.gridCanvas.width, this.gridCanvas.height);
+      }
+    });
+  }
+
+  setupEventListeners() {
+    this.toggleSnapElement?.addEventListener('change', (e) => {
+      this.state.snapEnabled = e.target.checked;
+      this.cy.emit('render');
+    });
+
+    this.gridSizeInput?.addEventListener('change', (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (!isNaN(val) && val > 0) {
+        this.state.gridSize = val;
+        this.cy.emit('render');
+      }
+    });
+  }
 }

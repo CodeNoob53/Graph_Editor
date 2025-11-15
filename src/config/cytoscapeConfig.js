@@ -12,7 +12,6 @@ export function initCytoscape(container) {
     container: container,
     minZoom: 0.1,
     maxZoom: 4.0,
-    wheelSensitivity: 0.05,
     zoom: 1.0,
     style: cytoscapeStyles,
     layout: { name: 'grid', rows: 1 }

@@ -1,15 +1,23 @@
-export function setupZoomDisplay(cy) {
-  const zoomDisplay = document.getElementById("zoomDisplay");
+export class ZoomManager {
+  constructor(cy) {
+    this.cy = cy;
+    this.zoomDisplay = document.getElementById("zoomDisplay");
 
-  if (!zoomDisplay) {
-    console.warn('Zoom display element not found');
-    return;
+    if (!this.zoomDisplay) {
+      return;
+    }
+
+    this.init();
   }
 
-  function updateZoomDisplay() {
-    zoomDisplay.innerText = `Zoom: ${(cy.zoom() * 100).toFixed(0)}%`;
+  init() {
+    this.cy.on("zoom", () => this.updateDisplay());
+    this.updateDisplay();
   }
 
-  cy.on("zoom", updateZoomDisplay);
-  updateZoomDisplay();
+  updateDisplay() {
+    if (this.zoomDisplay) {
+      this.zoomDisplay.innerText = `Zoom: ${(this.cy.zoom() * 100).toFixed(0)}%`;
+    }
+  }
 }
