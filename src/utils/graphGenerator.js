@@ -55,6 +55,21 @@ function validateParams(params) {
 }
 
 /**
+ * Генерує випадкову початкову позицію для вершини
+ * Це запобігає накладанню вершин до застосування layout
+ */
+function getRandomPosition(index, total) {
+  // Розміщуємо вершини по колу як початкову позицію
+  const radius = Math.min(300, Math.max(150, total * 15));
+  const angle = (index / total) * 2 * Math.PI;
+
+  return {
+    x: 400 + radius * Math.cos(angle),
+    y: 300 + radius * Math.sin(angle)
+  };
+}
+
+/**
  * Застосовує layout до графа
  */
 function applyLayout(cy, layoutName, layoutOptions = {}) {
@@ -63,7 +78,8 @@ function applyLayout(cy, layoutName, layoutOptions = {}) {
     animate: true,
     animationDuration: 500,
     fit: true,
-    padding: 50
+    padding: 50,
+    randomize: layoutName !== 'preset' // Додаємо randomize для всіх крім preset
   };
 
   const layout = cy.layout({ ...defaultOptions, ...layoutOptions });
@@ -71,19 +87,22 @@ function applyLayout(cy, layoutName, layoutOptions = {}) {
 }
 
 /**
- * Створює масив вершин
+ * Створює масив вершин з початковими позиціями
  */
 function createNodes(count, state, extraData = () => ({})) {
   const nodes = [];
   for (let i = 0; i < count; i++) {
     const nodeId = generateNodeId(i, state);
     const extra = typeof extraData === 'function' ? extraData(i, nodeId) : {};
+    const position = getRandomPosition(i, count);
+
     nodes.push({
       group: 'nodes',
       data: {
         id: nodeId,
         ...extra
-      }
+      },
+      position: position // Додаємо початкову позицію
     });
   }
   return nodes;
@@ -136,7 +155,11 @@ export function generateCompleteGraph(cy, nodeCount, isDirected, minWeight, maxW
 
   // Використовуємо circle layout для повного графа
   applyLayout(cy, 'circle', {
-    radius: Math.min(300, Math.max(150, nodeCount * 20))
+    radius: Math.min(350, Math.max(150, nodeCount * 20)),
+    avoidOverlap: true,
+    spacingFactor: 1.5,
+    animate: true,
+    animationDuration: 500
   });
 
   state.nodeCount += nodeCount;
@@ -181,7 +204,11 @@ export function generateTree(cy, nodeCount, isDirected, minWeight, maxWeight, gr
   applyLayout(cy, 'breadthfirst', {
     roots: `#${nodes[0].data.id}`,
     directed: true,
-    spacingFactor: 1.5
+    spacingFactor: 1.75,
+    avoidOverlap: true,
+    nodeDimensionsIncludeLabels: true,
+    animate: true,
+    animationDuration: 500
   });
 
   state.nodeCount += nodeCount;
@@ -231,15 +258,19 @@ export function generateRandomGraph(cy, nodeCount, edgeProbability, isDirected, 
 
   // Використовуємо cose (force-directed) layout для випадкового графа
   applyLayout(cy, 'cose', {
-    idealEdgeLength: 100,
-    nodeOverlap: 20,
+    idealEdgeLength: 120,
+    nodeOverlap: 50,
     refresh: 20,
-    randomize: false,
-    componentSpacing: 100,
-    nodeRepulsion: 400000,
+    randomize: true, // Використовуємо випадкові початкові позиції
+    componentSpacing: 150,
+    nodeRepulsion: 500000,
     edgeElasticity: 100,
     nestingFactor: 5,
-    gravity: 80
+    gravity: 60,
+    numIter: 1000, // Більше ітерацій для кращого розподілу
+    initialTemp: 200,
+    coolingFactor: 0.95,
+    minTemp: 1.0
   });
 
   state.nodeCount += nodeCount;
@@ -280,8 +311,12 @@ export function generateCycle(cy, nodeCount, isDirected, minWeight, maxWeight, g
 
   // Використовуємо circle layout
   applyLayout(cy, 'circle', {
-    radius: Math.min(300, Math.max(150, nodeCount * 20)),
-    startAngle: -Math.PI / 2 // Починаємо з верхньої точки
+    radius: Math.min(350, Math.max(150, nodeCount * 20)),
+    startAngle: -Math.PI / 2, // Починаємо з верхньої точки
+    avoidOverlap: true,
+    spacingFactor: 1.5,
+    animate: true,
+    animationDuration: 500
   });
 
   state.nodeCount += nodeCount;
@@ -316,29 +351,45 @@ export function generateBipartiteGraph(cy, leftCount, rightCount, isDirected, mi
   const nodes = [];
   const nodeIdMap = { left: [], right: [] };
 
-  // Створюємо ліву частину
+  // Обчислюємо розміри для позиціонування
+  const maxRows = Math.max(leftCount, rightCount);
+  const canvasHeight = 500;
+  const canvasWidth = 700;
+  const leftX = 150;
+  const rightX = 550;
+  const startY = 100;
+
+  // Створюємо ліву частину з початковими позиціями
   for (let i = 0; i < leftCount; i++) {
     const nodeId = generateNodeId(i, state);
     nodeIdMap.left.push(nodeId);
+
+    const y = startY + (i * (canvasHeight - 200) / Math.max(1, leftCount - 1));
+
     nodes.push({
       group: 'nodes',
       data: {
         id: nodeId,
         bipartiteGroup: 'left'
-      }
+      },
+      position: { x: leftX, y: y } // Додаємо позицію відразу
     });
   }
 
-  // Створюємо праву частину
+  // Створюємо праву частину з початковими позиціями
   for (let i = 0; i < rightCount; i++) {
     const nodeId = generateNodeId(leftCount + i, state);
     nodeIdMap.right.push(nodeId);
+
+    const y = startY + (i * (canvasHeight - 200) / Math.max(1, rightCount - 1));
+
     nodes.push({
       group: 'nodes',
       data: {
         id: nodeId,
         bipartiteGroup: 'right'
-      }
+      },
+      position: { x: rightX, y: y } // Додаємо позицію відразу
     });
   }
 
@@ -372,33 +423,12 @@ export function generateBipartiteGraph(cy, leftCount, rightCount, isDirected, mi
 
   cy.add(edges);
 
-  // Покращений layout для двочасткового графа
-  const maxRows = Math.max(leftCount, rightCount);
-  const positions = {};
-
-  // Обчислюємо позиції для лівої частини
-  nodeIdMap.left.forEach((nodeId, index) => {
-    positions[nodeId] = {
-      x: 100,
-      y: 100 + (index * (400 / maxRows))
-    };
-  });
-
-  // Обчислюємо позиції для правої частини
-  nodeIdMap.right.forEach((nodeId, index) => {
-    positions[nodeId] = {
-      x: 400,
-      y: 100 + (index * (400 / maxRows))
-    };
-  });
-
-  // Застосовуємо preset layout з заданими позиціями
+  // Використовуємо preset layout щоб зберегти задані позиції
   applyLayout(cy, 'preset', {
-    positions: function(node) {
-      return positions[node.id()];
-    },
     fit: true,
-    padding: 50
+    padding: 50,
+    animate: true,
+    animationDuration: 500
   });
 
   state.nodeCount += leftCount + rightCount;
@@ -452,7 +482,12 @@ export function generateStarGraph(cy, nodeCount, isDirected, minWeight, maxWeigh
     levelWidth: function() {
       return 1;
     },
-    minNodeSpacing: 80
+    minNodeSpacing: 100,
+    avoidOverlap: true,
+    spacingFactor: 1.75,
+    equidistant: true,
+    animate: true,
+    animationDuration: 500
   });
 
   state.nodeCount += nodeCount;
