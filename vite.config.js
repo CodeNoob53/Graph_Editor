@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
+  base: '/Graph_Editor/',
   publicDir: 'public',
   resolve: {
     alias: {

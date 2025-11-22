@@ -1,4 +1,3 @@
-import './styles.css';
 import { GraphEditor } from './GraphEditor.js';
 
 document.addEventListener("DOMContentLoaded", () => {
