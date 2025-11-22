@@ -4,8 +4,15 @@ export function clearHighlights(cy) {
 
 export function highlightPath(cy, path, edgeIds = null) {
   clearHighlights(cy);
+
+  // Використовуємо batch тільки якщо метод доступний
+  const supportsBatch = typeof cy.startBatch === 'function';
+  if (supportsBatch) cy.startBatch();
+
   path.forEach((nodeId, index) => {
-    cy.$(`#${nodeId}`).addClass('highlighted');
+    // Використовуємо cy.getElementById() замість cy.$() для кращої продуктивності
+    cy.getElementById(nodeId).addClass('highlighted');
+
     if (index < path.length - 1) {
       // Якщо передано масив ID ребер, використовуємо його
       if (edgeIds && edgeIds[index]) {
@@ -50,10 +57,16 @@ export function highlightPath(cy, path, edgeIds = null) {
       }
     }
   });
+
+  if (supportsBatch) cy.endBatch();
 }
 
 export function highlightEdges(cy, mstEdges) {
   clearHighlights(cy);
+
+  const supportsBatch = typeof cy.startBatch === 'function';
+  if (supportsBatch) cy.startBatch();
+
   const nodesToHighlight = new Set();
   mstEdges.forEach(edgeInfo => {
     let edge;
@@ -75,14 +88,24 @@ export function highlightEdges(cy, mstEdges) {
       nodesToHighlight.add(edgeInfo.target);
     }
   });
-  nodesToHighlight.forEach(nodeId => cy.$(`#${nodeId}`).addClass('highlighted'));
+
+  // Використовуємо cy.getElementById() замість cy.$()
+  nodesToHighlight.forEach(nodeId => cy.getElementById(nodeId).addClass('highlighted'));
+
+  if (supportsBatch) cy.endBatch();
 }
 
 export function highlightNodesAndEdges(cy, nodes, edges) {
   clearHighlights(cy);
+
+  const supportsBatch = typeof cy.startBatch === 'function';
+  if (supportsBatch) cy.startBatch();
+
+  // Використовуємо cy.getElementById() замість cy.$()
   nodes.forEach(nodeId => {
-    cy.$(`#${nodeId}`).addClass('highlighted');
+    cy.getElementById(nodeId).addClass('highlighted');
   });
+
   edges.forEach(edgeInfo => {
     let edge;
 
@@ -101,4 +124,6 @@ export function highlightNodesAndEdges(cy, nodes, edges) {
       edge.addClass('highlighted');
     }
   });
+
+  if (supportsBatch) cy.endBatch();
 }

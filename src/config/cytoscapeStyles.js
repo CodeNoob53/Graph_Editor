@@ -24,9 +24,19 @@ export const cytoscapeStyles = [
       'line-color': '#FFFFFF',
       'target-arrow-color': '#00AEFF',
       'target-arrow-shape': 'triangle',
-      'curve-style': 'bezier',
+      'curve-style': 'unbundled-bezier', // Для підтримки кратних ребер
+      'control-point-distances': 40,
+      'control-point-weights': 0.5,
       'label': '',
     },
+  },
+  {
+    selector: 'edge[source = target]', // Петлі (self-loops)
+    style: {
+      'curve-style': 'bezier',
+      'loop-direction': '0deg',
+      'loop-sweep': '90deg'
+    }
   },
   {
     selector: 'edge[weight]',
