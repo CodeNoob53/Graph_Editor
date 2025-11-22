@@ -40,6 +40,7 @@ export function findShortestPath(cy, source, target, isDirected = false) {
   }
 
   const edges = cy.edges().map(edge => ({
+    id: edge.id(),
     source: edge.data('source'),
     target: edge.data('target'),
     weight: parseFloat(edge.data('weight')) || 1 // Вага за замовчуванням = 1
@@ -48,11 +49,13 @@ export function findShortestPath(cy, source, target, isDirected = false) {
   // Алгоритм Дейкстри
   const distances = {};
   const previous = {};
+  const previousEdge = {}; // Зберігаємо ID ребра для точної ідентифікації
   const unvisited = new Set(nodes);
 
   nodes.forEach(node => {
     distances[node] = Infinity;
     previous[node] = null;
+    previousEdge[node] = null;
   });
   distances[source] = 0;
 
@@ -80,6 +83,7 @@ export function findShortestPath(cy, source, target, isDirected = false) {
           if (alt < distances[edge.target]) {
             distances[edge.target] = alt;
             previous[edge.target] = currentNode;
+            previousEdge[edge.target] = edge.id;
           }
         }
       }
@@ -90,12 +94,14 @@ export function findShortestPath(cy, source, target, isDirected = false) {
           if (alt < distances[edge.target]) {
             distances[edge.target] = alt;
             previous[edge.target] = currentNode;
+            previousEdge[edge.target] = edge.id;
           }
         } else if (edge.target === currentNode && unvisited.has(edge.source)) {
           const alt = distances[currentNode] + edge.weight;
           if (alt < distances[edge.source]) {
             distances[edge.source] = alt;
             previous[edge.source] = currentNode;
+            previousEdge[edge.source] = edge.id;
           }
         }
       }
@@ -104,9 +110,14 @@ export function findShortestPath(cy, source, target, isDirected = false) {
 
   // Відновлення шляху
   const path = [];
+  const edgeIds = [];
   let currentNode = target;
+
   while (currentNode !== null) {
     path.unshift(currentNode);
+    if (previousEdge[currentNode] !== null) {
+      edgeIds.unshift(previousEdge[currentNode]);
+    }
     currentNode = previous[currentNode];
   }
 
@@ -114,6 +125,7 @@ export function findShortestPath(cy, source, target, isDirected = false) {
   if (path[0] !== source) {
     return {
       path: [],
+      edgeIds: [],
       distance: Infinity,
       error: "Шлях не знайдено",
       details: isDirected
@@ -125,6 +137,7 @@ export function findShortestPath(cy, source, target, isDirected = false) {
 
   return {
     path,
+    edgeIds,
     distance: distances[target],
     edgeCount: path.length - 1,
     success: true,

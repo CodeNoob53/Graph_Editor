@@ -318,6 +318,7 @@ function saveHistory() {
   function findShortestPath(cy, source, target) {
     const nodes = cy.nodes().map(node => node.id());
     const edges = cy.edges().map(edge => ({
+      id: edge.id(),
       source: edge.data('source'),
       target: edge.data('target'),
       weight: parseFloat(edge.data('weight')) || Infinity
@@ -325,11 +326,13 @@ function saveHistory() {
 
     const distances = {};
     const previous = {};
+    const previousEdge = {}; // Зберігаємо ID ребра
     const unvisited = new Set(nodes);
 
     nodes.forEach(node => {
       distances[node] = Infinity;
       previous[node] = null;
+      previousEdge[node] = null;
     });
     distances[source] = 0;
 
@@ -350,29 +353,35 @@ function saveHistory() {
           if (alt < distances[edge.target]) {
             distances[edge.target] = alt;
             previous[edge.target] = currentNode;
+            previousEdge[edge.target] = edge.id;
           }
         } else if (edge.target === currentNode && unvisited.has(edge.source)) {
           const alt = distances[currentNode] + edge.weight;
           if (alt < distances[edge.source]) {
             distances[edge.source] = alt;
             previous[edge.source] = currentNode;
+            previousEdge[edge.source] = edge.id;
           }
         }
       });
     }
 
     const path = [];
+    const edgeIds = [];
     let currentNode = target;
     while (currentNode !== null) {
       path.unshift(currentNode);
+      if (previousEdge[currentNode] !== null) {
+        edgeIds.unshift(previousEdge[currentNode]);
+      }
       currentNode = previous[currentNode];
     }
 
     if (path[0] !== source) {
-      return { path: [], distance: Infinity };
+      return { path: [], edgeIds: [], distance: Infinity };
     }
 
-    return { path, distance: distances[target] };
+    return { path, edgeIds, distance: distances[target] };
   }
 
   // Очищаємо підсвітку
@@ -381,12 +390,22 @@ function saveHistory() {
   }
 
   // Підсвічує шлях (массив вузлів)
-  function highlightPath(path) {
+  function highlightPath(path, edgeIds = null) {
     clearHighlights();
     path.forEach((nodeId, index) => {
       cy.$(`#${nodeId}`).addClass('highlighted');
       if (index < path.length - 1) {
-        const edge = cy.edges().filter(edge => {
+        // Якщо передано масив ID ребер, використовуємо його
+        if (edgeIds && edgeIds[index]) {
+          const edge = cy.getElementById(edgeIds[index]);
+          if (edge && edge.length > 0) {
+            edge.addClass('highlighted');
+            return;
+          }
+        }
+
+        // Інакше шукаємо ребро з мінімальною вагою між вершинами
+        const edges = cy.edges().filter(edge => {
           const source = edge.data('source');
           const target = edge.data('target');
           return (
@@ -394,7 +413,29 @@ function saveHistory() {
             (target === nodeId && source === path[index + 1])
           );
         });
-        edge.addClass('highlighted');
+
+        // Якщо знайдено ребра
+        if (edges.length > 0) {
+          // Якщо кілька ребер, підсвічуємо тільки з мінімальною вагою
+          if (edges.length > 1) {
+            let minEdge = null;
+            let minWeight = Infinity;
+
+            edges.forEach(e => {
+              const weight = parseFloat(e.data('weight')) || Infinity;
+              if (weight < minWeight) {
+                minWeight = weight;
+                minEdge = e;
+              }
+            });
+
+            if (minEdge) {
+              cy.getElementById(minEdge.id()).addClass('highlighted');
+            }
+          } else {
+            edges.addClass('highlighted');
+          }
+        }
       }
     });
   }
@@ -1332,7 +1373,7 @@ function saveHistory() {
       Path: ${pathDisplay}<br>
       Distance: ${distanceFormula}
     `;
-    highlightPath(shortestPathResult.path);
+    highlightPath(shortestPathResult.path, shortestPathResult.edgeIds);
 
     // Оновлюємо MathJax
     MathJax.typeset();

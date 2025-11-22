@@ -30,6 +30,7 @@ class MockElement {
 class MockCollection {
   constructor(elements = []) {
     this._elements = elements;
+    this.length = elements.length;
   }
 
   filter(fn) {
@@ -41,12 +42,12 @@ class MockCollection {
   }
 
   addClass(className) {
-    this._elements.forEach(el => el.addClass(className));
+    this._elements.forEach(el => el.addClass && el.addClass(className));
     return this;
   }
 
   removeClass(className) {
-    this._elements.forEach(el => el.removeClass(className));
+    this._elements.forEach(el => el.removeClass && el.removeClass(className));
     return this;
   }
 
@@ -71,15 +72,21 @@ class MockNode extends MockElement {
 }
 
 class MockEdge extends MockElement {
-  constructor(source, target) {
+  constructor(source, target, id = null) {
     super();
+    this._id = id || `${source}-${target}`;
     this._source = source;
     this._target = target;
+  }
+
+  id() {
+    return this._id;
   }
 
   data(key) {
     if (key === 'source') return this._source;
     if (key === 'target') return this._target;
+    if (key === 'weight') return 1; // Вага за замовчуванням
     return null;
   }
 }
@@ -105,11 +112,15 @@ class MockCytoscape {
     return new MockCollection([...this._nodes, ...this._edges]);
   }
 
+  getElementById(id) {
+    const element = [...this._nodes, ...this._edges].find(el => el.id() === id);
+    return new MockCollection(element ? [element] : []);
+  }
+
   $(selector) {
     if (selector.startsWith('#')) {
       const id = selector.substring(1);
-      const node = this._nodes.find(n => n.id() === id);
-      return new MockCollection(node ? [node] : []);
+      return this.getElementById(id);
     }
     return new MockCollection([]);
   }
