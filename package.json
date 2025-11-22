@@ -1,13 +1,17 @@
 {
   "name": "graph-editor",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "type": "module",
   "description": "Modern graph editor built with Cytoscape.js and Vite",
   "main": "src/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node test-algorithms-node.js && node test-highlight.js && node test-multiple-edges.js",
+    "test:algorithms": "node test-algorithms-node.js",
+    "test:highlight": "node test-highlight.js",
+    "test:edges": "node test-multiple-edges.js"
   },
   "keywords": [
     "graph",

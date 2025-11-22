@@ -1,10 +1,16 @@
 import { snapToGrid } from '../utils/grid.js';
+import _ from 'lodash';
 
 export class EventManager {
   constructor(cy, state, historyManager) {
     this.cy = cy;
     this.state = state;
     this.historyManager = historyManager;
+
+    // Debounce для saveHistory при перетягуванні
+    this.debouncedSave = _.debounce(() => {
+      this.historyManager.saveHistory();
+    }, 300);
 
     this.init();
   }
@@ -40,16 +46,22 @@ export class EventManager {
   setupNodeEvents() {
     this.cy.on('tap', 'node', (event) => {
       const node = event.target;
+
+      this.cy.startBatch();
       this.cy.elements().removeClass('active-node');
       node.addClass('active-node');
+      this.cy.endBatch();
     });
   }
 
   setupEdgeEvents() {
     this.cy.on('tap', 'edge', (event) => {
       const edge = event.target;
+
+      this.cy.startBatch();
       this.cy.elements().removeClass('active-edge');
       edge.addClass('active-edge');
+      this.cy.endBatch();
     });
 
     this.cy.on('dblclick', 'edge', (event) => {
@@ -81,11 +93,14 @@ export class EventManager {
   }
 
   clearSelection() {
-    this.cy.$('.selected').removeClass('selected');
-    this.cy.$('.highlighted').removeClass('highlighted');
+    this.cy.startBatch();
+
+    // Об'єднуємо всі removeClass в один виклик elements()
+    this.cy.elements().removeClass('selected highlighted active-node active-edge');
+
+    this.cy.endBatch();
+
     this.state.selectedNodeId = null;
-    this.cy.elements().removeClass('active-node');
-    this.cy.elements().removeClass('active-edge');
   }
 
   setupDragEvents() {
@@ -103,8 +118,8 @@ export class EventManager {
         node.position(snappedPos);
       }
 
-      // Зберігаємо історію в будь-якому випадку
-      this.historyManager.saveHistory();
+      // Використовуємо debounced версію для зменшення кількості викликів
+      this.debouncedSave();
     });
   }
 
