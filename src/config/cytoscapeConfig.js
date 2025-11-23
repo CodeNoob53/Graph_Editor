@@ -1,11 +1,13 @@
 import cytoscape from 'cytoscape';
 import edgehandles from 'cytoscape-edgehandles';
 import cxtmenu from 'cytoscape-cxtmenu';
+import dagre from 'cytoscape-dagre';
 import { cytoscapeStyles } from './cytoscapeStyles.js';
 
 // Реєструємо розширення
 cytoscape.use(edgehandles);
 cytoscape.use(cxtmenu);
+cytoscape.use(dagre);
 
 export function initCytoscape(container) {
   const cy = cytoscape({

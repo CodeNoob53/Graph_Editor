@@ -1,285 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Graph Constructor</title>
-    <link rel="icon" href="/icons/favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <!-- Шапка з логотипом та основними кнопками (Import, Undo, Redo, Export) -->
-    <div id="header">
-      <div class="graph_logo">
-        <img src="/icons/graph_logo.svg" />
-        <div id="appName">Graph Editor</div>
-      </div>
 
-      <div id="headerControls">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph Constructor</title>
+  <link rel="icon" href="/icons/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+
+<body>
+  <!-- Шапка з логотипом та основними кнопками (Import, Undo, Redo, Export) -->
+  <div id="header">
+    <div class="graph_logo">
+      <img src="/icons/graph_logo.svg" />
+      <div id="appName">Graph Editor</div>
+    </div>
+
+    <div id="headerControls">
+      <label>
+        <img src="/icons/upload.svg" alt="Import" />
+        Import
+        <input type="file" id="importGraph" accept=".json" style="display: none" />
+      </label>
+      <button id="undo">
+        <img src="/icons/undo.svg" alt="Undo" /> Undo
+      </button>
+      <button id="redo">
+        <img src="/icons/redo.svg" alt="Redo" /> Redo
+      </button>
+      <button id="exportGraph">
+        <img src="/icons/download.svg" alt="Export" /> Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Кнопка для відкриття панелі алгоритмів -->
+  <button id="openAlgoPanel" class="hidden">
+    <img src="/icons/algo_logo.svg" style="width: 20px; height: 20px; filter: brightness(0) invert(1);"
+      alt="Algorithms" />
+    Algorithms
+  </button>
+
+  <div id="AppContainer">
+    <!-- Права панель зі «спойлерними» плитками алгоритмів -->
+    <div id="rightPanel">
+      <div class="rpHeader">
+        <div class="rpLogo">
+          <img src="/icons/algo_logo.svg" />
+          <div id="algoName">Algorithms</div>
+        </div>
+        <div class="rpClose">✖</div>
+      </div>
+      <div class="rpContent">
+        <!-- Кнопки-плитки -->
+        <button id="getInfo" class="tileButton">Get Graph Info</button>
+        <button id="calculateMST" class="tileButton">Calculate MST</button>
+        <button id="findMinPath" class="tileButton">
+          Find Min Weighted Path (4 Vertices)
+        </button>
+        <button id="listSpanningTrees" class="tileButton">
+          List All Spanning Trees
+        </button>
+
+        <!-- Спойлер: кнопка + прихований блок для pathInputs -->
+        <button id="spoilerToggle" class="tileButton">
+          Shortest Path (Spoiler)
+        </button>
+        <div id="pathSpoilerContent" class="spoilerContent">
+          <div id="pathInputs">
+            <input type="text" id="sourceNode" placeholder="Enter Source Node ID" />
+            <input type="text" id="targetNode" placeholder="Enter Target Node ID" />
+            <button id="findPath">Find Path</button>
+          </div>
+        </div>
+
+        <button id="eulerCalculation" class="tileButton">
+          Calculate Euler Trails and Circuits
+        </button>
+        <button id="hamiltonianCalculation" class="tileButton">
+          Calculate Hamiltonian Cycles
+        </button>
+
+        <!-- Спойлер: DFS та BFS -->
+        <button id="traversalSpoilerToggle" class="tileButton">
+          Graph Traversal (DFS & BFS)
+        </button>
+        <div id="traversalSpoilerContent" class="spoilerContent">
+          <div id="traversalInputs">
+            <input type="text" id="traversalStartNode" placeholder="Enter Start Node ID" />
+            <button id="runDFS">Run DFS</button>
+            <button id="runBFS">Run BFS</button>
+          </div>
+        </div>
+
+        <button id="checkConnectivity" class="tileButton">
+          Check Graph Connectivity
+        </button>
+        <button id="detectCycle" class="tileButton">
+          Detect Cycles
+        </button>
+      </div>
+    </div>
+
+    <div class="subcontainer">
+      <div id="gridControls">
         <label>
-          <img src="/icons/upload.svg" alt="Import" />
-          Import
-          <input
-            type="file"
-            id="importGraph"
-            accept=".json"
-            style="display: none"
-          />
+          <input type="checkbox" id="directedGraph" checked />
+          Directed Graph
         </label>
-        <button id="undo">
-          <img src="/icons/undo.svg" alt="Undo" /> Undo
-        </button>
-        <button id="redo">
-          <img src="/icons/redo.svg" alt="Redo" /> Redo
-        </button>
-        <button id="exportGraph">
-          <img src="/icons/download.svg" alt="Export" /> Export
-        </button>
+
+        <label>
+          <input type="checkbox" id="toggleSnap" checked />
+          Snap to Grid
+        </label>
+        <label>
+          Grid Size:
+          <input type="number" id="gridSizeInput" value="50" min="10" step="10" />
+        </label>
+        <label>
+          Layout:
+          <select id="layoutSelect">
+            <option value="grid">Grid</option>
+            <option value="circle">Circle</option>
+            <option value="dagre">Tree (Dagre)</option>
+            <option value="cose">Force (COSE)</option>
+            <option value="concentric">Concentric</option>
+          </select>
+        </label>
       </div>
+
+      <div id="editor" style="position: relative">
+        <div id="cy" style="width: 800px; height: 600px"></div>
+        <!-- Ліва панель з іконками (вертикально) -->
+        <div id="leftToolbar">
+          <button id="mouseArrow" title="Select">
+            <img src="/icons/arrow.svg" alt="Arrow" />
+          </button>
+          <button id="addNode" title="Add Node">
+            <img src="/icons/node.svg" alt="Add Node" />
+          </button>
+          <button id="addEdge" title="Add Edge">
+            <img src="/icons/edge.svg" alt="Add Edge" />
+          </button>
+        </div>
+        <!-- Кнопка очистити граф, розміщена зліва знизу -->
+        <div id="clearGraphContainer">
+          <button id="clearGraph" title="Clear Graph">
+            <img src="/icons/trash.svg" alt="Clear" />
+          </button>
+          <button id="generateGraph" title="Generate Graph">
+            <img src="/icons/node.svg" alt="Generate" />
+          </button>
+        </div>
+        <canvas id="gridCanvas" width="800" height="600"
+          style="position: absolute; top: 0; left: 0; pointer-events: none"></canvas>
+        <!-- зум в середині редактора -->
+        <div id="zoomDisplay"></div>
+      </div>
+      <div id="info"></div>
     </div>
-
-    <!-- Кнопка для відкриття панелі алгоритмів -->
-    <button id="openAlgoPanel" class="hidden">
-      <img src="/icons/algo_logo.svg" style="width: 20px; height: 20px; filter: brightness(0) invert(1);" alt="Algorithms" />
-      Algorithms
-    </button>
-
-    <div id="AppContainer">
-      <!-- Права панель зі «спойлерними» плитками алгоритмів -->
-      <div id="rightPanel">
-        <div class="rpHeader">
-          <div class="rpLogo">
-            <img src="/icons/algo_logo.svg" />
-            <div id="algoName">Algorithms</div>
-          </div>
-          <div class="rpClose">✖</div>
-        </div>
-        <div  class="rpContent">
-          <!-- Кнопки-плитки -->
-          <button id="getInfo" class="tileButton">Get Graph Info</button>
-          <button id="calculateMST" class="tileButton">Calculate MST</button>
-          <button id="findMinPath" class="tileButton">
-            Find Min Weighted Path (4 Vertices)
-          </button>
-          <button id="listSpanningTrees" class="tileButton">
-            List All Spanning Trees
-          </button>
-
-          <!-- Спойлер: кнопка + прихований блок для pathInputs -->
-          <button id="spoilerToggle" class="tileButton">
-            Shortest Path (Spoiler)
-          </button>
-          <div id="pathSpoilerContent" class="spoilerContent">
-            <div id="pathInputs">
-              <input
-                type="text"
-                id="sourceNode"
-                placeholder="Enter Source Node ID"
-              />
-              <input
-                type="text"
-                id="targetNode"
-                placeholder="Enter Target Node ID"
-              />
-              <button id="findPath">Find Path</button>
-            </div>
-          </div>
-
-          <button id="eulerCalculation" class="tileButton">
-            Calculate Euler Trails and Circuits
-          </button>
-          <button id="hamiltonianCalculation" class="tileButton">
-            Calculate Hamiltonian Cycles
-          </button>
-
-          <!-- Спойлер: DFS та BFS -->
-          <button id="traversalSpoilerToggle" class="tileButton">
-            Graph Traversal (DFS & BFS)
-          </button>
-          <div id="traversalSpoilerContent" class="spoilerContent">
-            <div id="traversalInputs">
-              <input
-                type="text"
-                id="traversalStartNode"
-                placeholder="Enter Start Node ID"
-              />
-              <button id="runDFS">Run DFS</button>
-              <button id="runBFS">Run BFS</button>
-            </div>
-          </div>
-
-          <button id="checkConnectivity" class="tileButton">
-            Check Graph Connectivity
-          </button>
-          <button id="detectCycle" class="tileButton">
-            Detect Cycles
-          </button>
-        </div>
+  </div>
+  <!-- Modal для генерації графів -->
+  <div id="graphGeneratorModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Генерація графа</h2>
+        <span class="modal-close">&times;</span>
       </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="graphType">Тип графа:</label>
+          <select id="graphType">
+            <option value="complete">Повний граф (Complete)</option>
+            <option value="tree">Дерево (Tree)</option>
+            <option value="random">Випадковий граф (Random)</option>
+            <option value="cycle">Цикл (Cycle)</option>
+            <option value="bipartite">Двочастковий (Bipartite)</option>
+            <option value="star">Зірка (Star)</option>
+          </select>
+        </div>
 
-      <div class="subcontainer">
-        <div id="gridControls">
-          <label>
-            <input type="checkbox" id="directedGraph" checked />
-            Directed Graph
-          </label>
+        <div class="form-group" id="nodeCountGroup">
+          <label for="nodeCount">Кількість вершин:</label>
+          <input type="number" id="nodeCount" value="5" min="2" max="26" />
+        </div>
 
+        <div class="form-group" id="bipartiteGroup" style="display: none;">
+          <label for="leftNodes">Вершин зліва:</label>
+          <input type="number" id="leftNodes" value="3" min="1" max="13" />
+          <label for="rightNodes">Вершин справа:</label>
+          <input type="number" id="rightNodes" value="3" min="1" max="13" />
+        </div>
+
+        <div class="form-group" id="edgeProbabilityGroup" style="display: none;">
+          <label for="edgeProbability">Ймовірність ребра (0-1):</label>
+          <input type="number" id="edgeProbability" value="0.3" min="0" max="1" step="0.1" />
+        </div>
+
+        <div class="form-group">
+          <label for="minWeight">Мінімальна вага ребра:</label>
+          <input type="number" id="minWeight" value="1" min="1" />
+        </div>
+
+        <div class="form-group">
+          <label for="maxWeight">Максимальна вага ребра:</label>
+          <input type="number" id="maxWeight" value="10" min="1" />
+        </div>
+
+        <div class="form-group">
           <label>
-            <input type="checkbox" id="toggleSnap" checked />
-            Snap to Grid
-          </label>
-          <label>
-            Grid Size:
-            <input
-              type="number"
-              id="gridSizeInput"
-              value="50"
-              min="10"
-              step="10"
-            />
+            <input type="checkbox" id="clearBeforeGenerate" checked />
+            Очистити граф перед генерацією
           </label>
         </div>
-
-        <div id="editor" style="position: relative">
-          <div id="cy" style="width: 800px; height: 600px"></div>
-          <!-- Ліва панель з іконками (вертикально) -->
-          <div id="leftToolbar">
-            <button id="mouseArrow" title="Select">
-              <img src="/icons/arrow.svg" alt="Arrow" />
-            </button>
-            <button id="addNode" title="Add Node">
-              <img src="/icons/node.svg" alt="Add Node" />
-            </button>
-            <button id="addEdge" title="Add Edge">
-              <img src="/icons/edge.svg" alt="Add Edge" />
-            </button>
-          </div>
-          <!-- Кнопка очистити граф, розміщена зліва знизу -->
-          <div id="clearGraphContainer">
-            <button id="clearGraph" title="Clear Graph">
-              <img src="/icons/trash.svg" alt="Clear" />
-            </button>
-            <button id="generateGraph" title="Generate Graph">
-              <img src="/icons/node.svg" alt="Generate" />
-            </button>
-          </div>
-          <canvas
-            id="gridCanvas"
-            width="800"
-            height="600"
-            style="position: absolute; top: 0; left: 0; pointer-events: none"
-          ></canvas>
-          <!-- зум в середині редактора -->
-          <div id="zoomDisplay"></div>
-        </div>
-        <div id="info"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelGenerate" class="btn-secondary">Скасувати</button>
+        <button id="confirmGenerate" class="btn-primary">Генерувати</button>
       </div>
     </div>
-    <!-- Modal для генерації графів -->
-    <div id="graphGeneratorModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Генерація графа</h2>
-          <span class="modal-close">&times;</span>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="graphType">Тип графа:</label>
-            <select id="graphType">
-              <option value="complete">Повний граф (Complete)</option>
-              <option value="tree">Дерево (Tree)</option>
-              <option value="random">Випадковий граф (Random)</option>
-              <option value="cycle">Цикл (Cycle)</option>
-              <option value="bipartite">Двочастковий (Bipartite)</option>
-              <option value="star">Зірка (Star)</option>
-            </select>
-          </div>
+  </div>
 
-          <div class="form-group" id="nodeCountGroup">
-            <label for="nodeCount">Кількість вершин:</label>
-            <input type="number" id="nodeCount" value="5" min="2" max="26" />
-          </div>
-
-          <div class="form-group" id="bipartiteGroup" style="display: none;">
-            <label for="leftNodes">Вершин зліва:</label>
-            <input type="number" id="leftNodes" value="3" min="1" max="13" />
-            <label for="rightNodes">Вершин справа:</label>
-            <input type="number" id="rightNodes" value="3" min="1" max="13" />
-          </div>
-
-          <div class="form-group" id="edgeProbabilityGroup" style="display: none;">
-            <label for="edgeProbability">Ймовірність ребра (0-1):</label>
-            <input type="number" id="edgeProbability" value="0.3" min="0" max="1" step="0.1" />
-          </div>
-
-          <div class="form-group">
-            <label for="minWeight">Мінімальна вага ребра:</label>
-            <input type="number" id="minWeight" value="1" min="1" />
-          </div>
-
-          <div class="form-group">
-            <label for="maxWeight">Максимальна вага ребра:</label>
-            <input type="number" id="maxWeight" value="10" min="1" />
-          </div>
-
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="clearBeforeGenerate" checked />
-              Очистити граф перед генерацією
-            </label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id="cancelGenerate" class="btn-secondary">Скасувати</button>
-          <button id="confirmGenerate" class="btn-primary">Генерувати</button>
-        </div>
+  <div id="overlay">
+    <div class="loader-content">
+      <div class="loader">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" class="spinner">
+          <circle stroke="url(#gradient)" r="20" cy="33" cx="33" stroke-width="1" fill="transparent" class="path">
+          </circle>
+          <linearGradient id="gradient">
+            <stop stop-opacity="1" stop-color="#fe0000" offset="0%"></stop>
+            <stop stop-opacity="0" stop-color="#af3dff" offset="100%"></stop>
+          </linearGradient>
+        </svg>
+      </div>
+      <div class="loader-text">
+        <div class="title">Calculate</div>
+        <div class="subtitle">Please wait...</div>
       </div>
     </div>
+  </div>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+      },
+    };
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
 
-    <div id="overlay">
-      <div class="loader-content">
-        <div class="loader">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 66 66"
-            class="spinner"
-          >
-            <circle
-              stroke="url(#gradient)"
-              r="20"
-              cy="33"
-              cx="33"
-              stroke-width="1"
-              fill="transparent"
-              class="path"
-            ></circle>
-            <linearGradient id="gradient">
-              <stop stop-opacity="1" stop-color="#fe0000" offset="0%"></stop>
-              <stop stop-opacity="0" stop-color="#af3dff" offset="100%"></stop>
-            </linearGradient>
-          </svg>
-        </div>
-        <div class="loader-text">
-          <div class="title">Calculate</div>
-          <div class="subtitle">Please wait...</div>
-        </div>
-      </div>
-    </div>
-    <script
-      id="MathJax-script"
-      async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-    ></script>
-    <script>
-      window.MathJax = {
-        tex: {
-          inlineMath: [
-            ["$", "$"],
-            ["\\(", "\\)"],
-          ],
-        },
-      };
-    </script>
-    <script type="module" src="/src/main.js"></script>
-  </body>
 </html>

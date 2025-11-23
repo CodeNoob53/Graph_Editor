@@ -1,6 +1,6 @@
 // Зберігаємо активні тайм-аути для можливості їх скасування
 let activeTimeouts = [];
-const ANIMATION_STEP_DELAY = 500;
+const ANIMATION_STEP_DELAY = 100;
 
 export function clearHighlights(cy) {
   // Скасовуємо всі заплановані анімації

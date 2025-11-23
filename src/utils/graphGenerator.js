@@ -136,7 +136,7 @@ export function generateCompleteGraph(cy, nodeCount, isDirected, minWeight, maxW
 
   // Використовуємо circle layout для повного графа
   applyLayout(cy, 'circle', {
-    radius: Math.min(300, Math.max(150, nodeCount * 20))
+    radius: Math.min(400, Math.max(200, nodeCount * 30))
   });
 
   state.nodeCount += nodeCount;
@@ -177,11 +177,15 @@ export function generateTree(cy, nodeCount, isDirected, minWeight, maxWeight, gr
   cy.add(nodes);
   cy.add(edges);
 
-  // Використовуємо breadthfirst layout для дерева
-  applyLayout(cy, 'breadthfirst', {
-    roots: `#${nodes[0].data.id}`,
-    directed: true,
-    spacingFactor: 1.5
+  // Використовуємо dagre layout для дерева
+  applyLayout(cy, 'dagre', {
+    rankDir: 'TB', // Top to Bottom
+    animate: true,
+    animationDuration: 500,
+    padding: 50,
+    spacingFactor: 2.0,
+    nodeSep: 80,
+    rankSep: 100
   });
 
   state.nodeCount += nodeCount;
@@ -230,13 +234,14 @@ export function generateRandomGraph(cy, nodeCount, edgeProbability, isDirected, 
   cy.add(edges);
 
   // Використовуємо cose (force-directed) layout для випадкового графа
+  // Використовуємо cose (force-directed) layout для випадкового графа
   applyLayout(cy, 'cose', {
-    idealEdgeLength: 100,
+    idealEdgeLength: 150,
     nodeOverlap: 20,
     refresh: 20,
     randomize: false,
-    componentSpacing: 100,
-    nodeRepulsion: 400000,
+    componentSpacing: 150,
+    nodeRepulsion: 1000000,
     edgeElasticity: 100,
     nestingFactor: 5,
     gravity: 80
@@ -279,8 +284,9 @@ export function generateCycle(cy, nodeCount, isDirected, minWeight, maxWeight, g
   cy.add(edges);
 
   // Використовуємо circle layout
+  // Використовуємо circle layout
   applyLayout(cy, 'circle', {
-    radius: Math.min(300, Math.max(150, nodeCount * 20)),
+    radius: Math.min(400, Math.max(200, nodeCount * 30)),
     startAngle: -Math.PI / 2 // Починаємо з верхньої точки
   });
 
@@ -380,21 +386,21 @@ export function generateBipartiteGraph(cy, leftCount, rightCount, isDirected, mi
   nodeIdMap.left.forEach((nodeId, index) => {
     positions[nodeId] = {
       x: 100,
-      y: 100 + (index * (400 / maxRows))
+      y: 100 + (index * (600 / maxRows))
     };
   });
 
   // Обчислюємо позиції для правої частини
   nodeIdMap.right.forEach((nodeId, index) => {
     positions[nodeId] = {
-      x: 400,
-      y: 100 + (index * (400 / maxRows))
+      x: 500,
+      y: 100 + (index * (600 / maxRows))
     };
   });
 
   // Застосовуємо preset layout з заданими позиціями
   applyLayout(cy, 'preset', {
-    positions: function(node) {
+    positions: function (node) {
       return positions[node.id()];
     },
     fit: true,
@@ -446,13 +452,13 @@ export function generateStarGraph(cy, nodeCount, isDirected, minWeight, maxWeigh
 
   // Використовуємо concentric layout
   applyLayout(cy, 'concentric', {
-    concentric: function(node) {
+    concentric: function (node) {
       return node.data('isCenter') ? 2 : 1;
     },
-    levelWidth: function() {
+    levelWidth: function () {
       return 1;
     },
-    minNodeSpacing: 80
+    minNodeSpacing: 120
   });
 
   state.nodeCount += nodeCount;

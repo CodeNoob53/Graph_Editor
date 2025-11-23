@@ -33,6 +33,72 @@ export class UIManager {
     this.setupAlgorithmButtons();
     this.setupUIToggleButtons();
     this.setupGraphGenerator();
+    this.setupLayoutControls();
+  }
+
+  setupLayoutControls() {
+    const layoutSelect = document.getElementById('layoutSelect');
+    layoutSelect?.addEventListener('change', () => {
+      const layoutName = layoutSelect.value;
+      this.applyLayout(layoutName);
+    });
+  }
+
+  applyLayout(name) {
+    let options = {
+      name: name,
+      animate: true,
+      animationDuration: 500,
+      padding: 50,
+      fit: true
+    };
+
+    switch (name) {
+      case 'dagre':
+        options = {
+          ...options,
+          rankDir: 'TB',
+          spacingFactor: 2.0,
+          nodeSep: 80,
+          rankSep: 100
+        };
+        break;
+      case 'cose':
+        options = {
+          ...options,
+          idealEdgeLength: 150,
+          nodeOverlap: 20,
+          refresh: 20,
+          fit: true,
+          padding: 30,
+          randomize: false,
+          componentSpacing: 150,
+          nodeRepulsion: 1000000,
+          edgeElasticity: 100,
+          nestingFactor: 5,
+          gravity: 80,
+          numIter: 1000,
+          initialTemp: 200,
+          coolingFactor: 0.95,
+          minTemp: 1.0
+        };
+        break;
+      case 'circle':
+        options = {
+          ...options,
+          radius: Math.min(400, Math.max(200, this.cy.nodes().length * 30))
+        };
+        break;
+      case 'concentric':
+        options = {
+          ...options,
+          minNodeSpacing: 100,
+          levelWidth: () => 1
+        };
+        break;
+    }
+
+    this.cy.layout(options).run();
   }
 
   setMode(mode) {
@@ -451,8 +517,8 @@ export class UIManager {
             <div style="margin-top: 10px; padding: 10px; background: rgba(255, 169, 77, 0.1); border-radius: 4px;">
               <p><strong>Компоненти зв'язності:</strong></p>
               ${result.componentsList.map((comp, i) =>
-                `<p style="font-family: monospace; font-size: 0.9em;">Компонента ${i + 1}: {${comp.join(', ')}}</p>`
-              ).join('')}
+            `<p style="font-family: monospace; font-size: 0.9em;">Компонента ${i + 1}: {${comp.join(', ')}}</p>`
+          ).join('')}
             </div>
           `;
         }
