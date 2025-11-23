@@ -160,6 +160,8 @@ html, body {
 #info {
     margin-top: 20px;
     width: 800px;
+    max-height: 200px !important;
+    min-height: 100px;
     padding: 20px;
     background-color: #1e1e1e;
     border: 1px solid #3c3c3c;
@@ -168,6 +170,33 @@ html, body {
     word-wrap: break-word;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     color: #d4d4d4;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: block;
+}
+
+/* Scrollbar для WebKit (Chrome, Safari, Edge) */
+#info::-webkit-scrollbar {
+    width: 8px;
+}
+
+#info::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+#info::-webkit-scrollbar-thumb {
+    background: #505050;
+    border-radius: 4px;
+}
+
+#info::-webkit-scrollbar-thumb:hover {
+    background: #606060;
+}
+
+/* Scrollbar для Firefox */
+#info {
+    scrollbar-width: thin;
+    scrollbar-color: #505050 #1e1e1e;
 }
 
 /* region Стилі для графічних елементів cytoscape */
@@ -540,6 +569,45 @@ input[type="number"]::-webkit-outer-spin-button {
     transition: transform 0.1s;
 }
 
+/* Клас для приховування панелі */
+#rightPanel.hidden {
+    display: none;
+}
+
+/* Кнопка для відкриття панелі алгоритмів */
+#openAlgoPanel {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    background-color: #3c3c3c;
+    color: #d4d4d4;
+    border: 1px solid #505050;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    transition: all 0.2s;
+}
+
+#openAlgoPanel:hover {
+    background-color: #505050;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+#openAlgoPanel:active {
+    transform: translateY(0);
+}
+
+#openAlgoPanel.hidden {
+    display: none;
+}
+
 /* Кнопки-плитки */
 .tileButton {
     background-color: #3c3c3c;
@@ -786,5 +854,181 @@ input[type="number"]::-webkit-outer-spin-button {
     width: 24px;
     height: 24px;
     filter: brightness(0) invert(1);
+}
+
+/* ===== АДАПТИВНІСТЬ ===== */
+
+/* Для планшетів (max-width: 1024px) */
+@media (max-width: 1024px) {
+    #AppContainer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #rightPanel {
+        width: 100%;
+        max-width: 600px;
+        margin-top: 10px;
+    }
+
+    .subcontainer {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    #editor, #cy, #gridCanvas {
+        width: 100% !important;
+        max-width: 600px;
+    }
+
+    #info {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    #openAlgoPanel {
+        top: 50px;
+        right: 10px;
+    }
+}
+
+/* Для мобільних пристроїв (max-width: 768px) */
+@media (max-width: 768px) {
+    #header {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    #headerControls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #headerControls button,
+    #headerControls label {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+
+    #rightPanel {
+        max-width: 100%;
+    }
+
+    .rpContent {
+        padding: 5px;
+    }
+
+    .tileButton {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .subcontainer {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    #editor, #cy, #gridCanvas {
+        max-width: 100%;
+        height: 400px !important;
+    }
+
+    #info {
+        max-width: 100%;
+        font-size: 12px;
+        padding: 15px;
+        max-height: 250px;
+    }
+
+    #gridControls {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    #leftToolbar {
+        width: 35px;
+    }
+
+    #leftToolbar button {
+        width: 35px;
+        height: 35px;
+    }
+
+    #clearGraphContainer {
+        gap: 5px;
+    }
+
+    #clearGraph, #generateGraph {
+        width: 35px;
+        height: 35px;
+    }
+
+    #zoomDisplay {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    #openAlgoPanel {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+}
+
+/* Для малих екранів (max-width: 480px) */
+@media (max-width: 480px) {
+    #appName {
+        font-size: 12px;
+    }
+
+    #header img {
+        width: 16px;
+        height: 16px;
+    }
+
+    #headerControls button span,
+    #headerControls label {
+        display: none;
+    }
+
+    #headerControls button img {
+        margin: 0;
+    }
+
+    #editor, #cy, #gridCanvas {
+        height: 300px !important;
+    }
+
+    #info {
+        max-height: 200px;
+        font-size: 11px;
+        padding: 10px;
+    }
+
+    .tileButton {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    #pathInputs input,
+    #traversalInputs input {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    #pathInputs button,
+    #traversalInputs button {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
 }
 

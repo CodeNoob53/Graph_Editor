@@ -154,7 +154,7 @@ export class UIManager {
           </div>
         `;
       } else {
-        highlightEdges(this.cy, result.mst);
+        highlightEdges(this.cy, result.mst, this.state.isDirected);
         document.getElementById('info').innerHTML = `
           <div style="color: #51cf66;">
             <h3>✓ Мінімальне остовне дерево (MST)</h3>
@@ -190,7 +190,7 @@ export class UIManager {
           </div>
         `;
       } else {
-        highlightPath(this.cy, result.path);
+        highlightPath(this.cy, result.path, this.state.isDirected);
         const arrow = this.state.isDirected ? '→' : '—';
         document.getElementById('info').innerHTML = `
           <div style="color: #51cf66;">
@@ -216,11 +216,12 @@ export class UIManager {
           </div>
         `;
       } else {
-        highlightNodesAndEdges(this.cy, result.bestPath,
-          result.bestPath.slice(1).map((node, i) => ({
+        highlightNodesAndEdges(this.cy, result.bestFullPath || result.bestPath,
+          result.bestEdges || result.bestPath.slice(1).map((node, i) => ({
             source: result.bestPath[i],
             target: node
-          }))
+          })),
+          this.state.isDirected
         );
         document.getElementById('info').innerHTML = result.formattedMessage;
         if (window.MathJax) {
@@ -355,8 +356,8 @@ export class UIManager {
           ? '✓ Обхід повний (всі вершини відвідані)'
           : `⚠️ Обхід неповний (відвідано ${result.visitedCount} з ${result.totalNodes} вершин)`;
 
-        // Підсвічуємо шлях обходу
-        highlightPath(this.cy, result.traversalOrder);
+        // Підсвічуємо вершини та ребра обходу
+        highlightNodesAndEdges(this.cy, result.traversalOrder, result.traversalEdges, this.state.isDirected);
 
         document.getElementById('info').innerHTML = `
           <div style="color: #51cf66;">
@@ -407,8 +408,8 @@ export class UIManager {
           .map(([level, nodes]) => `Рівень ${level}: ${nodes.join(', ')}`)
           .join('<br>');
 
-        // Підсвічуємо шлях обходу
-        highlightPath(this.cy, result.traversalOrder);
+        // Підсвічуємо вершини та ребра обходу
+        highlightNodesAndEdges(this.cy, result.traversalOrder, result.traversalEdges, this.state.isDirected);
 
         document.getElementById('info').innerHTML = `
           <div style="color: #51cf66;">
@@ -519,12 +520,18 @@ export class UIManager {
 
     const rpClose = document.querySelector('.rpClose');
     const rightPanel = document.getElementById('rightPanel');
+    const openAlgoPanel = document.getElementById('openAlgoPanel');
+
+    // Закрити панель алгоритмів
     rpClose?.addEventListener('click', () => {
-      if (rightPanel.style.display === 'none') {
-        rightPanel.style.display = 'block';
-      } else {
-        rightPanel.style.display = 'none';
-      }
+      rightPanel?.classList.add('hidden');
+      openAlgoPanel?.classList.remove('hidden');
+    });
+
+    // Відкрити панель алгоритмів
+    openAlgoPanel?.addEventListener('click', () => {
+      rightPanel?.classList.remove('hidden');
+      openAlgoPanel?.classList.add('hidden');
     });
   }
 

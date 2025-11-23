@@ -56,46 +56,75 @@ export function findMinWeightedPathForFourVertices(cy, isDirected = false) {
 
   let minWeight = Infinity;
   let bestPath = null;
+  let bestFullPath = null;
+  let bestEdges = null;
 
   const combinations = getCombinations(nodes, 4);
 
   for (const combination of combinations) {
     const [u, v, x, y] = combination;
 
-    const weightUV = findShortestPathWeight(graph, u, v);
-    const weightVX = findShortestPathWeight(graph, v, x);
-    const weightXY = findShortestPathWeight(graph, x, y);
+    const pathUV = findShortestPath(graph, u, v);
+    const pathVX = findShortestPath(graph, v, x);
+    const pathXY = findShortestPath(graph, x, y);
 
-    if (weightUV !== Infinity && weightVX !== Infinity && weightXY !== Infinity) {
-      const totalWeight = weightUV + weightVX + weightXY;
+    if (pathUV && pathVX && pathXY) {
+      const totalWeight = pathUV.weight + pathVX.weight + pathXY.weight;
 
       if (totalWeight < minWeight) {
         minWeight = totalWeight;
         bestPath = [u, v, x, y];
+
+        // Об'єднуємо всі шляхи, видаляючи дублікати на межах
+        bestFullPath = [
+          ...pathUV.path,
+          ...pathVX.path.slice(1),
+          ...pathXY.path.slice(1)
+        ];
+
+        // Створюємо список ребер для підсвітки
+        bestEdges = [
+          ...pathUV.edges,
+          ...pathVX.edges,
+          ...pathXY.edges
+        ];
       }
     }
   }
 
-  function findShortestPathWeight(graph, start, target) {
+  function findShortestPath(graph, start, target) {
     const visited = new Set();
     let minWeight = Infinity;
+    let bestPath = null;
 
-    function dfs(node, weight) {
+    function dfs(node, weight, path) {
       if (node === target) {
-        minWeight = Math.min(minWeight, weight);
+        if (weight < minWeight) {
+          minWeight = weight;
+          bestPath = [...path];
+        }
         return;
       }
       visited.add(node);
       for (const neighbor of graph[node]) {
         if (!visited.has(neighbor.target)) {
-          dfs(neighbor.target, weight + neighbor.weight);
+          dfs(neighbor.target, weight + neighbor.weight, [...path, neighbor.target]);
         }
       }
       visited.delete(node);
     }
 
-    dfs(start, 0);
-    return minWeight;
+    dfs(start, 0, [start]);
+
+    if (!bestPath) return null;
+
+    // Створюємо список ребер зі шляху
+    const edges = [];
+    for (let i = 0; i < bestPath.length - 1; i++) {
+      edges.push({ source: bestPath[i], target: bestPath[i + 1] });
+    }
+
+    return { weight: minWeight, path: bestPath, edges };
   }
 
   if (!bestPath) {
@@ -117,6 +146,8 @@ export function findMinWeightedPathForFourVertices(cy, isDirected = false) {
 
   return {
     bestPath,
+    bestFullPath,
+    bestEdges,
     minWeight,
     vertexCount: 4,
     segmentCount: 3,

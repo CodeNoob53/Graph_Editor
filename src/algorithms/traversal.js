@@ -58,18 +58,24 @@ export function depthFirstSearch(cy, startNodeId, isDirected = false) {
 
   const visited = new Set();
   const traversalOrder = [];
+  const traversalEdges = []; // Ребра, використані в обході
 
   /**
    * Рекурсивна функція DFS
    */
-  function dfsRecursive(nodeId) {
+  function dfsRecursive(nodeId, parentId = null) {
     visited.add(nodeId);
     traversalOrder.push(nodeId);
+
+    // Додаємо ребро від батька до поточної вершини
+    if (parentId !== null) {
+      traversalEdges.push({ source: parentId, target: nodeId });
+    }
 
     const neighbors = adjacency[nodeId] || [];
     for (const neighbor of neighbors) {
       if (!visited.has(neighbor)) {
-        dfsRecursive(neighbor);
+        dfsRecursive(neighbor, nodeId);
       }
     }
   }
@@ -80,6 +86,7 @@ export function depthFirstSearch(cy, startNodeId, isDirected = false) {
     success: true,
     algorithm: 'DFS (Depth-First Search)',
     traversalOrder: traversalOrder,
+    traversalEdges: traversalEdges,
     visitedCount: visited.size,
     totalNodes: nodes.length,
     isComplete: visited.size === nodes.length,
@@ -142,20 +149,26 @@ export function depthFirstSearchIterative(cy, startNodeId, isDirected = false) {
 
   const visited = new Set();
   const traversalOrder = [];
-  const stack = [startNodeId];
+  const traversalEdges = []; // Ребра, використані в обході
+  const stack = [{ nodeId: startNodeId, parentId: null }];
 
   while (stack.length > 0) {
-    const nodeId = stack.pop();
+    const { nodeId, parentId } = stack.pop();
 
     if (!visited.has(nodeId)) {
       visited.add(nodeId);
       traversalOrder.push(nodeId);
 
+      // Додаємо ребро від батька до поточної вершини
+      if (parentId !== null) {
+        traversalEdges.push({ source: parentId, target: nodeId });
+      }
+
       // Додаємо сусідів до стеку (в зворотному порядку для коректної послідовності)
       const neighbors = adjacency[nodeId] || [];
       for (let i = neighbors.length - 1; i >= 0; i--) {
         if (!visited.has(neighbors[i])) {
-          stack.push(neighbors[i]);
+          stack.push({ nodeId: neighbors[i], parentId: nodeId });
         }
       }
     }
@@ -165,6 +178,7 @@ export function depthFirstSearchIterative(cy, startNodeId, isDirected = false) {
     success: true,
     algorithm: 'DFS Iterative (Depth-First Search)',
     traversalOrder: traversalOrder,
+    traversalEdges: traversalEdges,
     visitedCount: visited.size,
     totalNodes: nodes.length,
     isComplete: visited.size === nodes.length,
@@ -227,21 +241,27 @@ export function breadthFirstSearch(cy, startNodeId, isDirected = false) {
 
   const visited = new Set();
   const traversalOrder = [];
-  const queue = [startNodeId];
+  const traversalEdges = []; // Ребра, використані в обході
+  const queue = [{ nodeId: startNodeId, parentId: null }];
   const levels = {}; // Зберігає рівень кожної вершини
 
   visited.add(startNodeId);
   levels[startNodeId] = 0;
 
   while (queue.length > 0) {
-    const nodeId = queue.shift(); // Видаляємо з початку черги
+    const { nodeId, parentId } = queue.shift(); // Видаляємо з початку черги
     traversalOrder.push(nodeId);
+
+    // Додаємо ребро від батька до поточної вершини
+    if (parentId !== null) {
+      traversalEdges.push({ source: parentId, target: nodeId });
+    }
 
     const neighbors = adjacency[nodeId] || [];
     for (const neighbor of neighbors) {
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
-        queue.push(neighbor);
+        queue.push({ nodeId: neighbor, parentId: nodeId });
         levels[neighbor] = levels[nodeId] + 1;
       }
     }
@@ -260,6 +280,7 @@ export function breadthFirstSearch(cy, startNodeId, isDirected = false) {
     success: true,
     algorithm: 'BFS (Breadth-First Search)',
     traversalOrder: traversalOrder,
+    traversalEdges: traversalEdges,
     visitedCount: visited.size,
     totalNodes: nodes.length,
     isComplete: visited.size === nodes.length,

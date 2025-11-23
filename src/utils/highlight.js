@@ -2,7 +2,7 @@ export function clearHighlights(cy) {
   cy.elements().removeClass('highlighted');
 }
 
-export function highlightPath(cy, path) {
+export function highlightPath(cy, path, isDirected = false) {
   clearHighlights(cy);
   path.forEach((nodeId, index) => {
     cy.$(`#${nodeId}`).addClass('highlighted');
@@ -10,6 +10,12 @@ export function highlightPath(cy, path) {
       const edges = cy.edges().filter(edge => {
         const source = edge.data('source');
         const target = edge.data('target');
+
+        // Для орієнтованого графа: тільки ребра у правильному напрямку
+        if (isDirected) {
+          return source === nodeId && target === path[index + 1];
+        }
+        // Для неорієнтованого: обидва напрямки
         return (
           (source === nodeId && target === path[index + 1]) ||
           (target === nodeId && source === path[index + 1])
@@ -35,12 +41,17 @@ export function highlightPath(cy, path) {
   });
 }
 
-export function highlightEdges(cy, mstEdges) {
+export function highlightEdges(cy, mstEdges, isDirected = false) {
   clearHighlights(cy);
   const nodesToHighlight = new Set();
-  
+
   mstEdges.forEach(edgeInfo => {
     const edges = cy.edges().filter(e => {
+      // Для орієнтованого графа: тільки ребра у правильному напрямку
+      if (isDirected) {
+        return e.data('source') === edgeInfo.source && e.data('target') === edgeInfo.target;
+      }
+      // Для неорієнтованого: обидва напрямки
       return (e.data('source') === edgeInfo.source && e.data('target') === edgeInfo.target) ||
         (e.data('source') === edgeInfo.target && e.data('target') === edgeInfo.source);
     });
@@ -68,14 +79,19 @@ export function highlightEdges(cy, mstEdges) {
   nodesToHighlight.forEach(nodeId => cy.$(`#${nodeId}`).addClass('highlighted'));
 }
 
-export function highlightNodesAndEdges(cy, nodes, edges) {
+export function highlightNodesAndEdges(cy, nodes, edges, isDirected = false) {
   clearHighlights(cy);
   nodes.forEach(nodeId => {
     cy.$(`#${nodeId}`).addClass('highlighted');
   });
-  
+
   edges.forEach(edgeInfo => {
     const foundEdges = cy.edges().filter(e => {
+      // Для орієнтованого графа: тільки ребра у правильному напрямку
+      if (isDirected) {
+        return e.data('source') === edgeInfo.source && e.data('target') === edgeInfo.target;
+      }
+      // Для неорієнтованого: обидва напрямки
       return (e.data('source') === edgeInfo.source && e.data('target') === edgeInfo.target) ||
         (e.data('source') === edgeInfo.target && e.data('target') === edgeInfo.source);
     });
