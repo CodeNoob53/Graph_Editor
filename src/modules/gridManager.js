@@ -14,6 +14,7 @@ export class GridManager {
   init() {
     this.setupRenderListener();
     this.setupEventListeners();
+    this.handleResize();
   }
 
   setupRenderListener() {
@@ -40,5 +41,18 @@ export class GridManager {
         this.cy.emit('render');
       }
     });
+
+    window.addEventListener('resize', () => {
+      this.handleResize();
+    });
+  }
+
+  handleResize() {
+    const container = this.cy.container();
+    if (container) {
+      this.gridCanvas.width = container.clientWidth;
+      this.gridCanvas.height = container.clientHeight;
+      this.cy.emit('render');
+    }
   }
 }
