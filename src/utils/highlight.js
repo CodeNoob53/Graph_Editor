@@ -18,16 +18,16 @@ export function highlightPath(cy, path) {
 
       // Якщо є кілька ребер між вершинами, вибираємо з найменшою вагою
       if (edges.length > 0) {
-        let minEdge = edges[0];
-        let minWeight = parseFloat(edges[0].data('weight')) || 1;
+        let minEdge = edges.first();
+        let minWeight = parseFloat(minEdge.data('weight')) || 1;
 
-        for (let i = 1; i < edges.length; i++) {
-          const weight = parseFloat(edges[i].data('weight')) || 1;
+        edges.forEach((edge) => {
+          const weight = parseFloat(edge.data('weight')) || 1;
           if (weight < minWeight) {
             minWeight = weight;
-            minEdge = edges[i];
+            minEdge = cy.getElementById(edge.id());
           }
-        }
+        });
 
         minEdge.addClass('highlighted');
       }
@@ -47,16 +47,16 @@ export function highlightEdges(cy, mstEdges) {
     
     // Якщо є кілька ребер між вершинами, вибираємо з найменшою вагою
     if (edges.length > 0) {
-      let minEdge = edges[0];
-      let minWeight = parseFloat(edges[0].data('weight')) || 1;
+      let minEdge = edges.first();
+      let minWeight = parseFloat(minEdge.data('weight')) || 1;
 
-      for (let i = 1; i < edges.length; i++) {
-        const weight = parseFloat(edges[i].data('weight')) || 1;
+      edges.forEach((edge) => {
+        const weight = parseFloat(edge.data('weight')) || 1;
         if (weight < minWeight) {
           minWeight = weight;
-          minEdge = edges[i];
+          minEdge = cy.getElementById(edge.id());
         }
-      }
+      });
 
       minEdge.addClass('highlighted');
     }
@@ -82,16 +82,16 @@ export function highlightNodesAndEdges(cy, nodes, edges) {
     
     // Якщо є кілька ребер між вершинами, вибираємо з найменшою вагою
     if (foundEdges.length > 0) {
-      let minEdge = foundEdges[0];
-      let minWeight = parseFloat(foundEdges[0].data('weight')) || 1;
+      let minEdge = foundEdges.first();
+      let minWeight = parseFloat(minEdge.data('weight')) || 1;
 
-      for (let i = 1; i < foundEdges.length; i++) {
-        const weight = parseFloat(foundEdges[i].data('weight')) || 1;
+      foundEdges.forEach((edge) => {
+        const weight = parseFloat(edge.data('weight')) || 1;
         if (weight < minWeight) {
           minWeight = weight;
-          minEdge = foundEdges[i];
+          minEdge = cy.getElementById(edge.id());
         }
-      }
+      });
 
       minEdge.addClass('highlighted');
     }
