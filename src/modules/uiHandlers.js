@@ -4,6 +4,7 @@ import { findMinWeightedPathForFourVertices } from '../algorithms/minWeightedPat
 import { generateAllSpanningTrees } from '../algorithms/spanningTrees.js';
 import { findEulerTrailAndCircuit } from '../algorithms/euler.js';
 import { findHamiltonianCycles } from '../algorithms/hamiltonian.js';
+import { findMaxFlowEdmondsKarp } from '../algorithms/edmondsKarp.js';
 import { depthFirstSearch, breadthFirstSearch, checkConnectivity, detectCycle } from '../algorithms/traversal.js';
 import { highlightPath, highlightEdges, highlightNodesAndEdges, clearHighlights } from '../utils/highlight.js';
 import {
@@ -265,6 +266,56 @@ export class UIManager {
             <p><strong>Відстань:</strong> ${result.distance}</p>
             <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
             <p><strong>Шлях:</strong> ${result.path.join(` ${arrow} `)}</p>
+          </div>
+        `;
+      }
+    });
+
+    const runMaxFlowButton = document.getElementById('runMaxFlow');
+    runMaxFlowButton?.addEventListener('click', () => {
+      const source = document.getElementById('sourceNode').value.trim();
+      const target = document.getElementById('targetNode').value.trim();
+
+      if (!source || !target) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ffa94d;">
+            <h3>⚠️ Введіть вершини</h3>
+            <p>Будь ласка, введіть вихідну та цільову вершини (Source/Sink)</p>
+          </div>
+        `;
+        return;
+      }
+
+      const result = findMaxFlowEdmondsKarp(this.cy, source, target);
+
+      if (result.error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
+      } else {
+        // Підсвічуємо ребра з потоком
+        clearHighlights(this.cy);
+        result.flowDetails.forEach(item => {
+          const edge = this.cy.getElementById(item.edgeId);
+          edge.addClass('highlighted');
+        });
+
+        const flowList = result.flowDetails
+          .map(f => `${f.source} → ${f.target}: ${f.flow}/${f.capacity}`)
+          .join('<br>');
+
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Максимальний потік (Edmonds-Karp)</h3>
+            <p><strong>Витік:</strong> ${source} <strong>Стік:</strong> ${target}</p>
+            <p><strong>Значення потоку:</strong> ${result.maxFlow}</p>
+            <div style="margin-top: 10px; padding: 10px; background: rgba(81, 207, 102, 0.1); border-radius: 4px;">
+              <p><strong>Деталі потоку:</strong></p>
+              <p style="font-family: monospace; font-size: 0.9em;">${flowList || 'Потік відсутній'}</p>
+            </div>
           </div>
         `;
       }
