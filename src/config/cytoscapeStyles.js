@@ -51,6 +51,9 @@ export const cytoscapeStyles = [
       'line-color': '#ff5d00',
       'target-arrow-color': '#ff5d00',
       'border-color': '#ffaf36',
+      'transition-property': 'background-color, line-color, target-arrow-color, border-color, width, border-width',
+      'transition-duration': '0.5s',
+      'transition-timing-function': 'ease-in-out'
     },
   },
   {
