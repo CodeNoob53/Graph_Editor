@@ -53,111 +53,53 @@
         <div class="rpClose">✖</div>
       </div>
       <div class="rpContent">
-        <!-- Розділ: Graph Information -->
-        <div class="section-title accordion-header" data-section="graphInfo">
-          <i class="fas fa-chart-bar"></i> Graph Information
-          <i class="fas fa-chevron-down accordion-arrow"></i>
-        </div>
-        <div class="section-content" id="graphInfoContent">
-          <button id="getInfo" class="tileButton">
-            <i class="fas fa-info-circle"></i> Get Graph Info
-          </button>
-          <button id="checkConnectivity" class="tileButton">
-            <i class="fas fa-link"></i> Check Graph Connectivity
-          </button>
-          <button id="detectCycle" class="tileButton">
-            <i class="fas fa-sync-alt"></i> Detect Cycles
-          </button>
-        </div>
+        <!-- Кнопки-плитки -->
+        <button id="getInfo" class="tileButton">Get Graph Info</button>
+        <button id="calculateMST" class="tileButton">Calculate MST</button>
+        <button id="findMinPath" class="tileButton">
+          Find Min Weighted Path (4 Vertices)
+        </button>
+        <button id="listSpanningTrees" class="tileButton">
+          List All Spanning Trees
+        </button>
 
-        <!-- Розділ: Спойлери (згруповані алгоритми) -->
-        <div class="section-title accordion-header" data-section="pathFlow">
-          <i class="fas fa-route"></i> Path & Flow Algorithms
-          <i class="fas fa-chevron-down accordion-arrow"></i>
-        </div>
-        <div class="section-content" id="pathFlowContent">
-          <!-- Спойлер: MST Algorithms -->
-          <button id="mstSpoilerToggle" class="tileButton">
-            <i class="fas fa-tree"></i> MST Algorithms
-          </button>
-          <div id="mstSpoilerContent" class="spoilerContent">
-            <div id="mstButtons">
-              <button id="calculateMST"><i class="fas fa-project-diagram"></i> MST (Prim's Algorithm)</button>
-              <button id="calculateKruskalMST" style="margin-top: 5px;"><i class="fas fa-sitemap"></i> MST (Kruskal's
-                Algorithm)</button>
-            </div>
-          </div>
-
-          <!-- Спойлер: Shortest Path & Flow -->
-          <button id="spoilerToggle" class="tileButton">
-            <i class="fas fa-map-signs"></i> Shortest Path & Flow
-          </button>
-          <div id="pathSpoilerContent" class="spoilerContent">
-            <div id="pathInputs">
-              <input type="text" id="sourceNode" placeholder="Enter Source Node ID" />
-              <input type="text" id="targetNode" placeholder="Enter Target Node ID" />
-              <button id="findPath"><i class="fas fa-route"></i> Dijkstra (Shortest Path)</button>
-              <button id="runAStar" style="margin-top: 5px;"><i class="fas fa-star"></i> A* Algorithm</button>
-              <button id="runBellmanFord" style="margin-top: 5px;"><i class="fas fa-wave-square"></i>
-                Bellman-Ford</button>
-              <button id="runMaxFlow" style="margin-top: 5px;"><i class="fas fa-water"></i> Max Flow
-                (Edmonds-Karp)</button>
-            </div>
-          </div>
-
-          <!-- Спойлер: Graph Traversal -->
-          <button id="traversalSpoilerToggle" class="tileButton">
-            <i class="fas fa-search"></i> Graph Traversal
-          </button>
-          <div id="traversalSpoilerContent" class="spoilerContent">
-            <div id="traversalInputs">
-              <input type="text" id="traversalStartNode" placeholder="Enter Start Node ID" />
-              <button id="runDFS"><i class="fas fa-arrow-down"></i> DFS (Depth-First Search)</button>
-              <button id="runBFS" style="margin-top: 5px;"><i class="fas fa-layer-group"></i> BFS (Breadth-First
-                Search)</button>
-            </div>
+        <!-- Спойлер: кнопка + прихований блок для pathInputs -->
+        <button id="spoilerToggle" class="tileButton">
+          Shortest Path (Spoiler)
+        </button>
+        <div id="pathSpoilerContent" class="spoilerContent">
+          <div id="pathInputs">
+            <input type="text" id="sourceNode" placeholder="Enter Source Node ID" />
+            <input type="text" id="targetNode" placeholder="Enter Target Node ID" />
+            <button id="findPath">Find Path</button>
           </div>
         </div>
 
-        <!-- Розділ: Graph Algorithms -->
-        <div class="section-title accordion-header" data-section="graphAlgo">
-          <i class="fas fa-cogs"></i> Graph Algorithms
-          <i class="fas fa-chevron-down accordion-arrow"></i>
-        </div>
-        <div class="section-content" id="graphAlgoContent">
-          <button id="runTopologicalSort" class="tileButton">
-            <i class="fas fa-sort-amount-down"></i> Topological Sort
-          </button>
-          <button id="findSCC" class="tileButton">
-            <i class="fas fa-object-group"></i> Strongly Connected Components
-          </button>
-          <button id="calculatePageRank" class="tileButton">
-            <i class="fas fa-chart-line"></i> PageRank
-          </button>
-          <button id="findBridgesAndArticulation" class="tileButton">
-            <i class="fas fa-drafting-compass"></i> Bridges & Articulation Points
-          </button>
+        <button id="eulerCalculation" class="tileButton">
+          Calculate Euler Trails and Circuits
+        </button>
+        <button id="hamiltonianCalculation" class="tileButton">
+          Calculate Hamiltonian Cycles
+        </button>
+
+        <!-- Спойлер: DFS та BFS -->
+        <button id="traversalSpoilerToggle" class="tileButton">
+          Graph Traversal (DFS & BFS)
+        </button>
+        <div id="traversalSpoilerContent" class="spoilerContent">
+          <div id="traversalInputs">
+            <input type="text" id="traversalStartNode" placeholder="Enter Start Node ID" />
+            <button id="runDFS">Run DFS</button>
+            <button id="runBFS">Run BFS</button>
+          </div>
         </div>
 
-        <!-- Розділ: Special Paths & Cycles -->
-        <div class="section-title accordion-header" data-section="pathsCycles">
-          <i class="fas fa-infinity"></i> Paths & Cycles
-          <i class="fas fa-chevron-down accordion-arrow"></i>
-        </div>
-        <div class="section-content" id="pathsCyclesContent">
-          <button id="findMinPath" class="tileButton">
-            <i class="fas fa-compress-arrows-alt"></i> Min Weighted Path (4 Vertices)
-          </button>
-          <button id="listSpanningTrees" class="tileButton">
-            <i class="fas fa-stream"></i> All Spanning Trees
-          </button>
-          <button id="eulerCalculation" class="tileButton">
-            <i class="fas fa-circle-notch"></i> Euler Trails & Circuits
-          </button>
-          <button id="hamiltonianCalculation" class="tileButton">
-            <i class="fas fa-redo-alt"></i> Hamiltonian Cycles
-          </button>
-        </div>
+        <button id="checkConnectivity" class="tileButton">
+          Check Graph Connectivity
+        </button>
+        <button id="detectCycle" class="tileButton">
+          Detect Cycles
+        </button>
       </div>
     </div>
 
@@ -241,14 +183,14 @@
 
         <div class="form-group" id="nodeCountGroup">
           <label for="nodeCount">Кількість вершин:</label>
-          <input type="number" id="nodeCount" value="5" min="2" max="200" />
+          <input type="number" id="nodeCount" value="5" min="2" max="26" />
         </div>
 
         <div class="form-group" id="bipartiteGroup" style="display: none;">
           <label for="leftNodes">Вершин зліва:</label>
-          <input type="number" id="leftNodes" value="3" min="1" max="100" />
+          <input type="number" id="leftNodes" value="3" min="1" max="13" />
           <label for="rightNodes">Вершин справа:</label>
-          <input type="number" id="rightNodes" value="3" min="1" max="100" />
+          <input type="number" id="rightNodes" value="3" min="1" max="13" />
         </div>
 
         <div class="form-group" id="edgeProbabilityGroup" style="display: none;">

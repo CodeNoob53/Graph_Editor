@@ -4,16 +4,8 @@ import { findMinWeightedPathForFourVertices } from '../algorithms/minWeightedPat
 import { generateAllSpanningTrees } from '../algorithms/spanningTrees.js';
 import { findEulerTrailAndCircuit } from '../algorithms/euler.js';
 import { findHamiltonianCycles } from '../algorithms/hamiltonian.js';
-import { findMaxFlowEdmondsKarp } from '../algorithms/edmondsKarp.js';
 import { depthFirstSearch, breadthFirstSearch, checkConnectivity, detectCycle } from '../algorithms/traversal.js';
-import { topologicalSort } from '../algorithms/topologicalSort.js';
-import { findStronglyConnectedComponents } from '../algorithms/scc.js';
-import { calculatePageRank } from '../algorithms/pagerank.js';
-import { findBridgesAndArticulationPoints } from '../algorithms/bridgesAndArticulation.js';
-import { findPathAStar } from '../algorithms/astar.js';
-import { calculateKruskalMST } from '../algorithms/kruskal.js';
-import { findPathBellmanFord } from '../algorithms/bellmanFord.js';
-import { highlightPath, highlightEdges, highlightNodesAndEdges, clearHighlights, animatePageRank, animateTopologicalSort } from '../utils/highlight.js';
+import { highlightPath, highlightEdges, highlightNodesAndEdges, clearHighlights } from '../utils/highlight.js';
 import {
   generateCompleteGraph,
   generateTree,
@@ -33,43 +25,6 @@ export class UIManager {
     this.init();
   }
 
-  // Helper функції для форматування повідомлень
-  formatMessage(type, title, content, details = null) {
-    const icons = {
-      success: 'fa-check-circle',
-      error: 'fa-times-circle',
-      warning: 'fa-exclamation-triangle',
-      info: 'fa-info-circle'
-    };
-
-    const icon = icons[type] || icons.info;
-    const detailsHtml = details ? `<div class="info-details">${details}</div>` : '';
-
-    return `
-      <div class="info-message info-${type}">
-        <h3><i class="fas ${icon}"></i> ${title}</h3>
-        ${content}
-        ${detailsHtml}
-      </div>
-    `;
-  }
-
-  showSuccess(title, content, details = null) {
-    document.getElementById('info').innerHTML = this.formatMessage('success', title, content, details);
-  }
-
-  showError(title, content, details = null) {
-    document.getElementById('info').innerHTML = this.formatMessage('error', title, content, details);
-  }
-
-  showWarning(title, content, details = null) {
-    document.getElementById('info').innerHTML = this.formatMessage('warning', title, content, details);
-  }
-
-  showInfo(title, content, details = null) {
-    document.getElementById('info').innerHTML = this.formatMessage('info', title, content, details);
-  }
-
   init() {
     this.setupModeButtons();
     this.setupGraphButtons();
@@ -79,15 +34,6 @@ export class UIManager {
     this.setupUIToggleButtons();
     this.setupGraphGenerator();
     this.setupLayoutControls();
-    this.setupEventListeners();
-  }
-
-  setupEventListeners() {
-    this.cy.on('tap', (event) => {
-      if (event.target === this.cy) {
-        clearHighlights(this.cy);
-      }
-    });
   }
 
   setupLayoutControls() {
@@ -99,15 +45,10 @@ export class UIManager {
   }
 
   applyLayout(name) {
-    const nodeCount = this.cy.nodes().length;
-
-    // Для великих графів вимикаємо анімацію
-    const shouldAnimate = nodeCount < 50;
-
     let options = {
       name: name,
-      animate: shouldAnimate,
-      animationDuration: shouldAnimate ? 500 : 0,
+      animate: true,
+      animationDuration: 500,
       padding: 50,
       fit: true
     };
@@ -123,16 +64,11 @@ export class UIManager {
         };
         break;
       case 'cose':
-        // Оптимізація параметрів в залежності від розміру графа
-        const iterations = nodeCount < 30 ? 1000 :
-                          nodeCount < 60 ? 300 :
-                          nodeCount < 100 ? 100 : 50;
-
         options = {
           ...options,
           idealEdgeLength: 150,
           nodeOverlap: 20,
-          refresh: nodeCount < 50 ? 20 : 10,
+          refresh: 20,
           fit: true,
           padding: 30,
           randomize: false,
@@ -141,8 +77,8 @@ export class UIManager {
           edgeElasticity: 100,
           nestingFactor: 5,
           gravity: 80,
-          numIter: iterations,
-          initialTemp: nodeCount < 50 ? 200 : 100,
+          numIter: 1000,
+          initialTemp: 200,
           coolingFactor: 0.95,
           minTemp: 1.0
         };
@@ -150,7 +86,7 @@ export class UIManager {
       case 'circle':
         options = {
           ...options,
-          radius: Math.min(400, Math.max(200, nodeCount * 30))
+          radius: Math.min(400, Math.max(200, this.cy.nodes().length * 30))
         };
         break;
       case 'concentric':
@@ -217,14 +153,13 @@ export class UIManager {
     getInfoButton?.addEventListener('click', () => {
       const nodes = this.cy.nodes();
       const edges = this.cy.edges();
-      this.showInfo(
-        'Graph Information',
-        `
-          <p>Nodes: ${nodes.length}</p>
-          <p>Edges: ${edges.length}</p>
-          <p>Type: ${this.state.isDirected ? 'Directed' : 'Undirected'}</p>
-        `
-      );
+      const info = `
+        <h3>Graph Information</h3>
+        <p>Nodes: ${nodes.length}</p>
+        <p>Edges: ${edges.length}</p>
+        <p>Type: ${this.state.isDirected ? 'Directed' : 'Undirected'}</p>
+      `;
+      document.getElementById('info').innerHTML = info;
     });
   }
 
@@ -278,17 +213,22 @@ export class UIManager {
     calculateMSTButton?.addEventListener('click', () => {
       const result = calculatePrimMST(this.cy, this.state.isDirected);
       if (result.error) {
-        this.showError(result.error, result.details);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
       } else {
         highlightEdges(this.cy, result.mst, this.state.isDirected);
-        this.showSuccess(
-          'Мінімальне остовне дерево (Prim\'s)',
-          `
-            <p><strong>Загальна вага:</strong> ${result.totalWeight.toFixed(2)}</p>
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Мінімальне остовне дерево (MST)</h3>
+            <p><strong>Загальна вага:</strong> ${result.totalWeight}</p>
             <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
             <p><strong>Кількість вершин:</strong> ${result.nodeCount}</p>
-          `
-        );
+          </div>
+        `;
       }
     });
 
@@ -298,71 +238,35 @@ export class UIManager {
       const target = document.getElementById('targetNode').value.trim();
 
       if (!source || !target) {
-        this.showWarning(
-          'Введіть вершини',
-          '<p>Будь ласка, введіть вихідну та цільову вершини</p>'
-        );
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ffa94d;">
+            <h3>⚠️ Введіть вершини</h3>
+            <p>Будь ласка, введіть вихідну та цільову вершини</p>
+          </div>
+        `;
         return;
       }
 
       const result = findShortestPath(this.cy, source, target, this.state.isDirected);
       if (result.error) {
-        this.showError(result.error, result.details);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
       } else {
         highlightPath(this.cy, result.path, this.state.isDirected);
         const arrow = this.state.isDirected ? '→' : '—';
-        this.showSuccess(
-          `Найкоротший шлях (Dijkstra)`,
-          `
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Найкоротший шлях (${result.graphType})</h3>
             <p><strong>Від:</strong> ${source} <strong>До:</strong> ${target}</p>
-            <p><strong>Відстань:</strong> ${result.distance.toFixed(2)}</p>
+            <p><strong>Відстань:</strong> ${result.distance}</p>
             <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
             <p><strong>Шлях:</strong> ${result.path.join(` ${arrow} `)}</p>
-          `
-        );
-      }
-    });
-
-    const runMaxFlowButton = document.getElementById('runMaxFlow');
-    runMaxFlowButton?.addEventListener('click', () => {
-      const source = document.getElementById('sourceNode').value.trim();
-      const target = document.getElementById('targetNode').value.trim();
-
-      if (!source || !target) {
-        this.showWarning(
-          'Введіть вершини',
-          '<p>Будь ласка, введіть вихідну та цільову вершини (Source/Sink)</p>'
-        );
-        return;
-      }
-
-      const result = findMaxFlowEdmondsKarp(this.cy, source, target);
-
-      if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        // Підсвічуємо ребра з потоком
-        clearHighlights(this.cy);
-        result.flowDetails.forEach(item => {
-          const edge = this.cy.getElementById(item.edgeId);
-          edge.addClass('highlighted');
-        });
-
-        const flowList = result.flowDetails
-          .map(f => `${f.source} → ${f.target}: ${f.flow}/${f.capacity}`)
-          .join('<br>');
-
-        this.showSuccess(
-          'Максимальний потік (Edmonds-Karp)',
-          `
-            <p><strong>Витік:</strong> ${source} <strong>Стік:</strong> ${target}</p>
-            <p><strong>Значення потоку:</strong> ${result.maxFlow}</p>
-          `,
-          `
-            <p><strong>Деталі потоку:</strong></p>
-            <p style="font-family: monospace;">${flowList || 'Потік відсутній'}</p>
-          `
-        );
+          </div>
+        `;
       }
     });
 
@@ -370,7 +274,13 @@ export class UIManager {
     findMinPathButton?.addEventListener('click', () => {
       const result = findMinWeightedPathForFourVertices(this.cy, this.state.isDirected);
       if (result.error) {
-        this.showError(result.error, result.details, result.checkedCombinations ? `<p>Перевірено комбінацій: ${result.checkedCombinations}</p>` : null);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.checkedCombinations ? `<p><small>Перевірено комбінацій: ${result.checkedCombinations}</small></p>` : ''}
+          </div>
+        `;
       } else {
         highlightNodesAndEdges(this.cy, result.bestFullPath || result.bestPath,
           result.bestEdges || result.bestPath.slice(1).map((node, i) => ({
@@ -379,11 +289,7 @@ export class UIManager {
           })),
           this.state.isDirected
         );
-        this.showSuccess(
-          'Мінімальний шлях через 4 вершини',
-          result.formattedMessage,
-          null
-        );
+        document.getElementById('info').innerHTML = result.formattedMessage;
         if (window.MathJax) {
           window.MathJax.typeset();
         }
@@ -394,17 +300,23 @@ export class UIManager {
     listSpanningTreesButton?.addEventListener('click', () => {
       const result = generateAllSpanningTrees(this.cy, this.state.isDirected);
       if (result.error) {
-        this.showError(result.error, result.details, result.checkedCombinations ? `<p>Перевірено комбінацій: ${result.checkedCombinations}</p>` : null);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.checkedCombinations ? `<p><small>Перевірено комбінацій: ${result.checkedCombinations}</small></p>` : ''}
+          </div>
+        `;
       } else {
-        this.showSuccess(
-          'Всі остовні дерева',
-          `
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Всі остовні дерева</h3>
             <p><strong>Знайдено дерев:</strong> ${result.count}</p>
             <p><strong>Вершин в графі:</strong> ${result.nodeCount}</p>
             <p><strong>Ребер в кожному дереві:</strong> ${result.edgesPerTree}</p>
-          `,
-          `<p>Перевірено комбінацій: ${result.totalCombinations}</p>`
-        );
+            <p><small>Перевірено комбінацій: ${result.totalCombinations}</small></p>
+          </div>
+        `;
       }
     });
 
@@ -412,17 +324,24 @@ export class UIManager {
     eulerCalculationButton?.addEventListener('click', () => {
       const result = findEulerTrailAndCircuit(this.cy, this.state.isDirected);
       if (result.error) {
-        this.showError(result.error, result.details, result.stats ? `<p>Тип графу: ${result.graphType}</p>` : null);
-      } else {
-        const typeLabel = result.type === 'circuit' ? 'Ейлерів цикл' : 'Ейлерів шлях';
-        this.showSuccess(
-          typeLabel,
-          `<p><strong>Результат:</strong> ${result.message}</p>`,
-          `
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
             <p>${result.details}</p>
-            <p>Тип графу: ${result.graphType}</p>
-          `
-        );
+            ${result.stats ? `<p><small>Тип графу: ${result.graphType}</small></p>` : ''}
+          </div>
+        `;
+      } else {
+        const icon = result.type === 'circuit' ? '🔄' : '📍';
+        const typeLabel = result.type === 'circuit' ? 'Ейлерів цикл' : 'Ейлерів шлях';
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ ${icon} ${typeLabel}</h3>
+            <p><strong>Результат:</strong> ${result.message}</p>
+            <p>${result.details}</p>
+            <p><small>Тип графу: ${result.graphType}</small></p>
+          </div>
+        `;
       }
     });
 
@@ -444,26 +363,30 @@ export class UIManager {
         }
 
         if (result.error) {
-          this.showError(result.error, result.details, result.stats ? `<p>Тип графу: ${result.graphType}</p>` : null);
+          document.getElementById('info').innerHTML = `
+            <div style="color: #ff6b6b;">
+              <h3>❌ ${result.error}</h3>
+              <p>${result.details}</p>
+              ${result.stats ? `<p><small>Тип графу: ${result.graphType}</small></p>` : ''}
+            </div>
+          `;
         } else {
           const cyclesList = result.formattedCycles.join('<br>');
           const additionalInfo = result.additionalCycles > 0
-            ? `<p>...та ще ${result.additionalCycles} циклів</p>`
+            ? `<p><small>...та ще ${result.additionalCycles} циклів</small></p>`
             : '';
 
-          this.showSuccess(
-            'Гамільтонові цикли',
-            `
+          document.getElementById('info').innerHTML = `
+            <div style="color: #51cf66;">
+              <h3>✓ 🔄 Гамільтонові цикли</h3>
               <p><strong>Знайдено циклів:</strong> ${result.count}</p>
               <p><strong>Довжина циклу:</strong> ${result.stats.cycleLength} вершин</p>
-            `,
-            `
               <p><strong>Перші ${result.showingFirst} циклів:</strong></p>
-              <p style="font-family: monospace;">${cyclesList}</p>
+              <p style="font-family: monospace; font-size: 0.9em;">${cyclesList}</p>
               ${additionalInfo}
-              <p>Тип графу: ${result.graphType}</p>
-            `
-          );
+              <p><small>Тип графу: ${result.graphType}</small></p>
+            </div>
+          `;
         }
       }, 100);
     });
@@ -486,7 +409,13 @@ export class UIManager {
       const result = depthFirstSearch(this.cy, startNode, this.state.isDirected);
 
       if (result.error) {
-        this.showError(result.error, result.details, result.availableNodes ? `<p>Доступні вершини: ${result.availableNodes.join(', ')}</p>` : null);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.availableNodes ? `<p><small>Доступні вершини: ${result.availableNodes.join(', ')}</small></p>` : ''}
+          </div>
+        `;
       } else {
         const arrow = this.state.isDirected ? '→' : '—';
         const completeness = result.isComplete
@@ -496,19 +425,16 @@ export class UIManager {
         // Підсвічуємо вершини та ребра обходу
         highlightNodesAndEdges(this.cy, result.traversalOrder, result.traversalEdges, this.state.isDirected);
 
-        const details = `
-          <p><strong>Початкова вершина:</strong> ${result.startNode}</p>
-          <p><strong>Порядок обходу:</strong> ${result.traversalOrder.join(` ${arrow} `)}</p>
-          <p><strong>Відвідано вершин:</strong> ${result.visitedCount} / ${result.totalNodes}</p>
-          <p>${completeness}</p>
-          <p>Тип графу: ${result.graphType}</p>
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>🔍 ${result.algorithm}</h3>
+            <p><strong>Початкова вершина:</strong> ${result.startNode}</p>
+            <p><strong>Порядок обходу:</strong> ${result.traversalOrder.join(` ${arrow} `)}</p>
+            <p><strong>Відвідано вершин:</strong> ${result.visitedCount} / ${result.totalNodes}</p>
+            <p>${completeness}</p>
+            <p><small>Тип графу: ${result.graphType}</small></p>
+          </div>
         `;
-
-        if (result.isComplete) {
-          this.showSuccess(result.algorithm, details);
-        } else {
-          this.showWarning(result.algorithm, details);
-        }
       }
     });
 
@@ -530,7 +456,13 @@ export class UIManager {
       const result = breadthFirstSearch(this.cy, startNode, this.state.isDirected);
 
       if (result.error) {
-        this.showError(result.error, result.details, result.availableNodes ? `<p>Доступні вершини: ${result.availableNodes.join(', ')}</p>` : null);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+            ${result.availableNodes ? `<p><small>Доступні вершини: ${result.availableNodes.join(', ')}</small></p>` : ''}
+          </div>
+        `;
       } else {
         const arrow = this.state.isDirected ? '→' : '—';
         const completeness = result.isComplete
@@ -545,24 +477,21 @@ export class UIManager {
         // Підсвічуємо вершини та ребра обходу
         highlightNodesAndEdges(this.cy, result.traversalOrder, result.traversalEdges, this.state.isDirected);
 
-        const details = `
-          <p><strong>Початкова вершина:</strong> ${result.startNode}</p>
-          <p><strong>Порядок обходу:</strong> ${result.traversalOrder.join(` ${arrow} `)}</p>
-          <p><strong>Відвідано вершин:</strong> ${result.visitedCount} / ${result.totalNodes}</p>
-          <p><strong>Максимальний рівень:</strong> ${result.maxLevel}</p>
-          <p>${completeness}</p>
-          <div style="margin-top: 10px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 4px;">
-            <p><strong>Розподіл по рівнях:</strong></p>
-            <p style="font-family: monospace;">${levelsList}</p>
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>🔍 ${result.algorithm}</h3>
+            <p><strong>Початкова вершина:</strong> ${result.startNode}</p>
+            <p><strong>Порядок обходу:</strong> ${result.traversalOrder.join(` ${arrow} `)}</p>
+            <p><strong>Відвідано вершин:</strong> ${result.visitedCount} / ${result.totalNodes}</p>
+            <p><strong>Максимальний рівень:</strong> ${result.maxLevel}</p>
+            <p>${completeness}</p>
+            <div style="margin-top: 10px; padding: 10px; background: rgba(81, 207, 102, 0.1); border-radius: 4px;">
+              <p><strong>Розподіл по рівнях:</strong></p>
+              <p style="font-family: monospace; font-size: 0.9em;">${levelsList}</p>
+            </div>
+            <p><small>Тип графу: ${result.graphType}</small></p>
           </div>
-          <p>Тип графу: ${result.graphType}</p>
         `;
-
-        if (result.isComplete) {
-          this.showSuccess(result.algorithm, details);
-        } else {
-          this.showWarning(result.algorithm, details);
-        }
       }
     });
 
@@ -572,32 +501,37 @@ export class UIManager {
       const result = checkConnectivity(this.cy, this.state.isDirected);
 
       if (result.error) {
-        this.showError(result.error, result.details);
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ ${result.error}</h3>
+            <p>${result.details}</p>
+          </div>
+        `;
       } else {
+        const icon = result.isConnected ? '✓' : '❌';
+        const color = result.isConnected ? '#51cf66' : '#ffa94d';
+
         let componentsInfo = '';
         if (!result.isConnected && result.componentsList) {
           componentsInfo = `
-            <div style="margin-top: 10px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 4px;">
+            <div style="margin-top: 10px; padding: 10px; background: rgba(255, 169, 77, 0.1); border-radius: 4px;">
               <p><strong>Компоненти зв'язності:</strong></p>
               ${result.componentsList.map((comp, i) =>
-            `<p style="font-family: monospace;">Компонента ${i + 1}: {${comp.join(', ')}}</p>`
+            `<p style="font-family: monospace; font-size: 0.9em;">Компонента ${i + 1}: {${comp.join(', ')}}</p>`
           ).join('')}
             </div>
           `;
         }
 
-        const details = `
-          <p><strong>Результат:</strong> ${result.message}</p>
-          <p><strong>Кількість вершин:</strong> ${result.totalNodes}</p>
-          <p><strong>Кількість компонент:</strong> ${result.components}</p>
-          ${componentsInfo}
+        document.getElementById('info').innerHTML = `
+          <div style="color: ${color};">
+            <h3>${icon} Перевірка зв'язності</h3>
+            <p><strong>Результат:</strong> ${result.message}</p>
+            <p><strong>Кількість вершин:</strong> ${result.totalNodes}</p>
+            <p><strong>Кількість компонент:</strong> ${result.components}</p>
+            ${componentsInfo}
+          </div>
         `;
-
-        if (result.isConnected) {
-          this.showSuccess("Перевірка зв'язності", details);
-        } else {
-          this.showWarning("Перевірка зв'язності", details);
-        }
       }
     });
 
@@ -607,204 +541,6 @@ export class UIManager {
       const result = detectCycle(this.cy, this.state.isDirected);
 
       if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        const details = `
-          <p><strong>Результат:</strong> ${result.message}</p>
-          <p><strong>Тип графу:</strong> ${result.graphType}</p>
-          ${result.hasCycle ? '<p>⚠️ Граф містить один або більше циклів</p>' : '<p>✓ Граф не містить циклів</p>'}
-        `;
-
-        if (result.hasCycle) {
-          this.showWarning("Виявлення циклів", details);
-        } else {
-          this.showSuccess("Виявлення циклів", details);
-        }
-      }
-    });
-
-
-
-    // Topological Sort
-    const runTopologicalSortButton = document.getElementById('runTopologicalSort');
-    runTopologicalSortButton?.addEventListener('click', () => {
-      const result = topologicalSort(this.cy, this.state.isDirected);
-
-      if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        const arrow = '→';
-
-        // Використовуємо нову анімацію
-        animateTopologicalSort(this.cy, result.steps);
-
-        this.showSuccess(
-          result.algorithm,
-          `
-            <p><strong>Топологічний порядок:</strong> ${result.topologicalOrder.join(` ${arrow} `)}</p>
-            <p><strong>Кількість вершин:</strong> ${result.nodeCount}</p>
-          `,
-          `
-            <p><strong>Тип графу:</strong> ${result.graphType}</p>
-            <p>Анімація показує алгоритм Кана (видалення вершин з 0 вхідним степенем)</p>
-          `
-        );
-      }
-    });
-
-    // SCC (Strongly Connected Components)
-    const findSCCButton = document.getElementById('findSCC');
-    findSCCButton?.addEventListener('click', () => {
-      const result = findStronglyConnectedComponents(this.cy, this.state.isDirected);
-
-      if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        const componentsHtml = result.componentDetails
-          .map(comp => `<p>SCC ${comp.id} (${comp.size} вершин): {${comp.nodes.join(', ')}}</p>`)
-          .join('');
-
-        // Підсвічуємо компоненти різними кольорами
-        clearHighlights(this.cy);
-        result.components.forEach((comp, idx) => {
-          // Генеруємо колір для компоненти
-          const hue = (idx * 137.508) % 360; // Golden angle approximation
-          const color = `hsl(${hue}, 70%, 50%)`;
-
-          comp.forEach(nodeId => {
-            this.cy.getElementById(nodeId).animate({
-              style: {
-                'background-color': color,
-                'border-color': color
-              }
-            }, { duration: 500 });
-          });
-        });
-
-        this.showSuccess(
-          result.algorithm,
-          `
-            <p><strong>${result.message}</strong></p>
-            <p><strong>Кількість компонент:</strong> ${result.componentCount}</p>
-            <p><strong>Найбільша компонента:</strong> ${result.largestComponent.length} вершин</p>
-          `,
-          `
-            <p><strong>Компоненти:</strong></p>
-            <div style="font-family: monospace;">${componentsHtml}</div>
-          `
-        );
-      }
-    });
-
-    // PageRank
-    const calculatePageRankButton = document.getElementById('calculatePageRank');
-    calculatePageRankButton?.addEventListener('click', () => {
-      const result = calculatePageRank(this.cy, this.state.isDirected);
-
-      if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        const topNodesHtml = result.rankedNodes
-          .slice(0, 10)
-          .map((node, idx) => `${idx + 1}. ${node.id}: ${node.percentage}%`)
-          .join('<br>');
-
-        // Запускаємо анімацію
-        animatePageRank(this.cy, result.steps);
-
-        this.showSuccess(
-          result.algorithm,
-          `
-            <p><strong>${result.message}</strong></p>
-            <p><strong>Топ-вершина:</strong> ${result.topNode.id} (${result.topNode.percentage}%)</p>
-            <p><strong>Ітерацій:</strong> ${result.iterations}</p>
-            <p><strong>Damping Factor:</strong> ${result.dampingFactor}</p>
-          `,
-          `
-            <p><strong>Топ-10 вершин за PageRank:</strong></p>
-            <p style="font-family: monospace;">${topNodesHtml}</p>
-          `
-        );
-      }
-    });
-
-    // Bridges and Articulation Points
-    const findBridgesButton = document.getElementById('findBridgesAndArticulation');
-    findBridgesButton?.addEventListener('click', () => {
-      const result = findBridgesAndArticulationPoints(this.cy, this.state.isDirected);
-
-      if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        // Підсвічуємо мости
-        if (result.bridges && result.bridges.length > 0) {
-          highlightEdges(this.cy, result.bridges, this.state.isDirected);
-        }
-
-        const bridgesHtml = result.bridges.length > 0
-          ? result.bridges.map(b => `${b.source} — ${b.target}`).join(', ')
-          : 'Немає';
-
-        const articulationHtml = result.articulationPoints.length > 0
-          ? result.articulationPoints.join(', ')
-          : 'Немає';
-
-        this.showSuccess(
-          result.algorithm,
-          `
-            <p><strong>${result.message}</strong></p>
-            <p><strong>Мостів:</strong> ${result.bridgeCount}</p>
-            <p><strong>Точок зчленування:</strong> ${result.articulationPointCount}</p>
-          `,
-          `
-            <p><strong>Мости:</strong> ${bridgesHtml}</p>
-            <p><strong>Точки зчленування:</strong> ${articulationHtml}</p>
-          `
-        );
-      }
-    });
-
-    // Kruskal MST
-    const calculateKruskalButton = document.getElementById('calculateKruskalMST');
-    calculateKruskalButton?.addEventListener('click', () => {
-      const result = calculateKruskalMST(this.cy, this.state.isDirected);
-
-      if (result.error) {
-        this.showError(result.error, result.details);
-      } else {
-        highlightEdges(this.cy, result.mst, this.state.isDirected);
-
-        this.showSuccess(
-          result.algorithm,
-          `
-            <p><strong>Загальна вага:</strong> ${result.totalWeight.toFixed(2)}</p>
-            <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
-            <p><strong>Кількість вершин:</strong> ${result.nodeCount}</p>
-            <p><strong>Оброблено ребер:</strong> ${result.processedEdges}</p>
-          `
-        );
-      }
-    });
-
-    // A* Algorithm
-    const runAStarButton = document.getElementById('runAStar');
-    runAStarButton?.addEventListener('click', () => {
-      const source = document.getElementById('sourceNode').value.trim();
-      const target = document.getElementById('targetNode').value.trim();
-
-      if (!source || !target) {
-        document.getElementById('info').innerHTML = `
-          <div style="color: #ffa94d;">
-            <h3>⚠️ Введіть вершини</h3>
-            <p>Будь ласка, введіть вихідну та цільову вершини</p>
-          </div>
-        `;
-        return;
-      }
-
-      const result = findPathAStar(this.cy, source, target, this.state.isDirected);
-
-      if (result.error) {
         document.getElementById('info').innerHTML = `
           <div style="color: #ff6b6b;">
             <h3>❌ ${result.error}</h3>
@@ -812,67 +548,15 @@ export class UIManager {
           </div>
         `;
       } else {
-        highlightPath(this.cy, result.path, this.state.isDirected);
-        const arrow = this.state.isDirected ? '→' : '—';
-
-        document.getElementById('info').innerHTML = `
-          <div style="color: #51cf66;">
-            <h3>✓ ${result.algorithm}</h3>
-            <p><strong>Від:</strong> ${source} <strong>До:</strong> ${target}</p>
-            <p><strong>Відстань:</strong> ${result.distance.toFixed(2)}</p>
-            <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
-            <p><strong>Вершин досліджено:</strong> ${result.nodesExplored}</p>
-            <p><strong>Евристика:</strong> ${result.heuristic}</p>
-            <p><strong>Шлях:</strong> ${result.path.join(` ${arrow} `)}</p>
-          </div>
-        `;
-      }
-    });
-
-    // Bellman-Ford Algorithm
-    const runBellmanFordButton = document.getElementById('runBellmanFord');
-    runBellmanFordButton?.addEventListener('click', () => {
-      const source = document.getElementById('sourceNode').value.trim();
-      const target = document.getElementById('targetNode').value.trim();
-
-      if (!source || !target) {
-        document.getElementById('info').innerHTML = `
-          <div style="color: #ffa94d;">
-            <h3>⚠️ Введіть вершини</h3>
-            <p>Будь ласка, введіть вихідну та цільову вершини</p>
-          </div>
-        `;
-        return;
-      }
-
-      const result = findPathBellmanFord(this.cy, source, target, this.state.isDirected);
-
-      if (result.error) {
-        const color = result.negativeCycle ? '#ffa94d' : '#ff6b6b';
-        const negativeCycleInfo = result.negativeCycle
-          ? `<p><strong>⚠️ Виявлено від'ємний цикл!</strong></p>
-             <p>Кількість ребер циклу: ${result.negativeCycleCount}</p>`
-          : '';
+        const icon = result.hasCycle ? '🔄' : '✓';
+        const color = result.hasCycle ? '#ffa94d' : '#51cf66';
 
         document.getElementById('info').innerHTML = `
           <div style="color: ${color};">
-            <h3>❌ ${result.error}</h3>
-            <p>${result.details}</p>
-            ${negativeCycleInfo}
-          </div>
-        `;
-      } else {
-        highlightPath(this.cy, result.path, this.state.isDirected);
-        const arrow = this.state.isDirected ? '→' : '—';
-
-        document.getElementById('info').innerHTML = `
-          <div style="color: #51cf66;">
-            <h3>✓ ${result.algorithm}</h3>
-            <p><strong>Від:</strong> ${source} <strong>До:</strong> ${target}</p>
-            <p><strong>Відстань:</strong> ${result.distance.toFixed(2)}</p>
-            <p><strong>Кількість ребер:</strong> ${result.edgeCount}</p>
-            <p><strong>Шлях:</strong> ${result.path.join(` ${arrow} `)}</p>
-            <p><small>✓ Bellman-Ford може працювати з від'ємними вагами</small></p>
+            <h3>${icon} Виявлення циклів</h3>
+            <p><strong>Результат:</strong> ${result.message}</p>
+            <p><strong>Тип графу:</strong> ${result.graphType}</p>
+            ${result.hasCycle ? '<p>⚠️ Граф містить один або більше циклів</p>' : '<p>✓ Граф не містить циклів</p>'}
           </div>
         `;
       }
@@ -880,25 +564,6 @@ export class UIManager {
   }
 
   setupUIToggleButtons() {
-    // Акордеони для категорій
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-    accordionHeaders.forEach(header => {
-      // За замовчуванням всі секції відкриті
-      header.classList.add('active');
-
-      header.addEventListener('click', () => {
-        const sectionId = header.getAttribute('data-section');
-        const content = document.getElementById(`${sectionId}Content`);
-
-        if (content) {
-          // Перемикаємо стан
-          header.classList.toggle('active');
-          content.classList.toggle('collapsed');
-        }
-      });
-    });
-
-    // Спойлери всередині секцій
     const spoilerToggle = document.getElementById('spoilerToggle');
     const pathSpoilerContent = document.getElementById('pathSpoilerContent');
     spoilerToggle?.addEventListener('click', () => {
@@ -916,16 +581,6 @@ export class UIManager {
         traversalSpoilerContent.style.display = 'block';
       } else {
         traversalSpoilerContent.style.display = 'none';
-      }
-    });
-
-    const mstSpoilerToggle = document.getElementById('mstSpoilerToggle');
-    const mstSpoilerContent = document.getElementById('mstSpoilerContent');
-    mstSpoilerToggle?.addEventListener('click', () => {
-      if (mstSpoilerContent.style.display === 'none' || !mstSpoilerContent.style.display) {
-        mstSpoilerContent.style.display = 'block';
-      } else {
-        mstSpoilerContent.style.display = 'none';
       }
     });
 
@@ -1003,24 +658,14 @@ export class UIManager {
       const maxWeight = parseInt(document.getElementById('maxWeight').value);
       const clearBefore = document.getElementById('clearBeforeGenerate').checked;
 
-      // Показуємо індикатор завантаження для великих графів
-      const overlay = document.getElementById('overlay');
-      const shouldShowLoader = nodeCount >= 30;
-
-      if (shouldShowLoader && overlay) {
-        overlay.style.display = 'flex';
+      // Очищення графа якщо потрібно
+      if (clearBefore) {
+        this.cy.elements().remove();
+        this.state.nodeCount = 0;
       }
 
-      // Використовуємо setTimeout для великих графів, щоб UI встиг оновитися
-      setTimeout(() => {
-        // Очищення графа якщо потрібно
-        if (clearBefore) {
-          this.cy.elements().remove();
-          this.state.nodeCount = 0;
-        }
-
-        try {
-          let result;
+      try {
+        let result;
 
         // Генерація графа в залежності від типу
         switch (graphType) {
@@ -1102,49 +747,57 @@ export class UIManager {
             break;
 
           default:
-            this.showError(
-              'Невідомий тип графа',
-              '<p>Виберіть один з доступних типів</p>'
-            );
+            document.getElementById('info').innerHTML = `
+              <div style="color: #ff6b6b;">
+                <h3>❌ Невідомий тип графа</h3>
+                <p>Виберіть один з доступних типів</p>
+              </div>
+            `;
             return;
         }
 
-          // Успішна генерація
-          // Оновлюємо стилі ребер
-          this.updateEdgeStyle();
-
-          // Зберігаємо в історію
-          this.historyManager.saveHistory();
-
-          // Показуємо інформацію про успіх
-          document.getElementById('info').innerHTML = `
-            <div style="color: #51cf66;">
-              <h3>✓ Граф успішно згенеровано</h3>
-              <p><strong>Тип:</strong> ${this.getGraphTypeName(graphType)}</p>
-              <p><strong>Вершин:</strong> ${result.nodes}</p>
-              <p><strong>Ребер:</strong> ${result.edges}</p>
-              <p><strong>Орієнтований:</strong> ${this.state.isDirected ? 'Так' : 'Ні'}</p>
-              ${result.message ? `<p><em>${result.message}</em></p>` : ''}
-            </div>
-          `;
-
-          // Закриваємо модальне вікно
-          closeModal();
-        } catch (error) {
+        // Перевірка результату
+        if (result && result.error) {
+          // Показуємо помилку
           document.getElementById('info').innerHTML = `
             <div style="color: #ff6b6b;">
-              <h3>❌ Помилка при генерації графа</h3>
-              <p>${error.message}</p>
+              <h3>❌ ${result.error}</h3>
+              <p>${result.details}</p>
             </div>
           `;
-          console.error(error);
-        } finally {
-          // Приховуємо індикатор завантаження
-          if (overlay) {
-            overlay.style.display = 'none';
-          }
+          return;
         }
-      }, shouldShowLoader ? 100 : 0);
+
+        // Успішна генерація
+        // Оновлюємо стилі ребер
+        this.updateEdgeStyle();
+
+        // Зберігаємо в історію
+        this.historyManager.saveHistory();
+
+        // Показуємо інформацію про успіх
+        document.getElementById('info').innerHTML = `
+          <div style="color: #51cf66;">
+            <h3>✓ Граф успішно згенеровано</h3>
+            <p><strong>Тип:</strong> ${this.getGraphTypeName(graphType)}</p>
+            <p><strong>Вершин:</strong> ${result.nodes}</p>
+            <p><strong>Ребер:</strong> ${result.edges}</p>
+            <p><strong>Орієнтований:</strong> ${this.state.isDirected ? 'Так' : 'Ні'}</p>
+            ${result.message ? `<p><em>${result.message}</em></p>` : ''}
+          </div>
+        `;
+
+        // Закриваємо модальне вікно
+        closeModal();
+      } catch (error) {
+        document.getElementById('info').innerHTML = `
+          <div style="color: #ff6b6b;">
+            <h3>❌ Помилка при генерації графа</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+        console.error(error);
+      }
     });
   }
 
