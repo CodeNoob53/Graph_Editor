@@ -56,15 +56,36 @@ function validateParams(params) {
 
 /**
  * Застосовує layout до графа
+ * Оптимізовано для великих графів
  */
 function applyLayout(cy, layoutName, layoutOptions = {}) {
+  const nodeCount = cy.nodes().length;
+
+  // Для великих графів вимикаємо анімацію
+  const shouldAnimate = nodeCount < 50;
+
   const defaultOptions = {
     name: layoutName,
-    animate: true,
-    animationDuration: 500,
+    animate: shouldAnimate,
+    animationDuration: shouldAnimate ? 500 : 0,
     fit: true,
     padding: 50
   };
+
+  // Оптимізація параметрів для COSE layout в залежності від розміру
+  if (layoutName === 'cose') {
+    const iterations = nodeCount < 30 ? 1000 :
+                      nodeCount < 60 ? 300 :
+                      nodeCount < 100 ? 100 : 50;
+
+    layoutOptions = {
+      ...layoutOptions,
+      numIter: iterations,
+      refresh: nodeCount < 50 ? 20 : 10,
+      initialTemp: nodeCount < 50 ? 200 : 100,
+      coolingFactor: 0.95
+    };
+  }
 
   const layout = cy.layout({ ...defaultOptions, ...layoutOptions });
   layout.run();
@@ -131,8 +152,11 @@ export function generateCompleteGraph(cy, nodeCount, isDirected, minWeight, maxW
     }
   }
 
-  cy.add(nodes);
-  cy.add(edges);
+  // Використовуємо батчинг для оптимізації (офіційна рекомендація)
+  cy.batch(() => {
+    cy.add(nodes);
+    cy.add(edges);
+  });
 
   // Використовуємо circle layout для повного графа
   applyLayout(cy, 'circle', {
@@ -174,14 +198,15 @@ export function generateTree(cy, nodeCount, isDirected, minWeight, maxWeight, gr
     edges.push(createEdge(parentId, childId, minWeight, maxWeight));
   }
 
-  cy.add(nodes);
-  cy.add(edges);
+  // Використовуємо батчинг для оптимізації (офіційна рекомендація)
+  cy.batch(() => {
+    cy.add(nodes);
+    cy.add(edges);
+  });
 
   // Використовуємо dagre layout для дерева
   applyLayout(cy, 'dagre', {
     rankDir: 'TB', // Top to Bottom
-    animate: true,
-    animationDuration: 500,
     padding: 50,
     spacingFactor: 2.0,
     nodeSep: 80,
@@ -230,15 +255,16 @@ export function generateRandomGraph(cy, nodeCount, edgeProbability, isDirected, 
     }
   }
 
-  cy.add(nodes);
-  cy.add(edges);
+  // Використовуємо батчинг для оптимізації (офіційна рекомендація)
+  cy.batch(() => {
+    cy.add(nodes);
+    cy.add(edges);
+  });
 
-  // Використовуємо cose (force-directed) layout для випадкового графа
   // Використовуємо cose (force-directed) layout для випадкового графа
   applyLayout(cy, 'cose', {
     idealEdgeLength: 150,
     nodeOverlap: 20,
-    refresh: 20,
     randomize: false,
     componentSpacing: 150,
     nodeRepulsion: 1000000,
@@ -280,10 +306,12 @@ export function generateCycle(cy, nodeCount, isDirected, minWeight, maxWeight, g
     edges.push(createEdge(sourceId, targetId, minWeight, maxWeight));
   }
 
-  cy.add(nodes);
-  cy.add(edges);
+  // Використовуємо батчинг для оптимізації (офіційна рекомендація)
+  cy.batch(() => {
+    cy.add(nodes);
+    cy.add(edges);
+  });
 
-  // Використовуємо circle layout
   // Використовуємо circle layout
   applyLayout(cy, 'circle', {
     radius: Math.min(400, Math.max(200, nodeCount * 30)),
@@ -348,8 +376,6 @@ export function generateBipartiteGraph(cy, leftCount, rightCount, isDirected, mi
     });
   }
 
-  cy.add(nodes);
-
   const edges = [];
 
   // З'єднуємо кожну вершину з лівої частини з випадковими вершинами з правої
@@ -376,7 +402,11 @@ export function generateBipartiteGraph(cy, leftCount, rightCount, isDirected, mi
     });
   }
 
-  cy.add(edges);
+  // Використовуємо батчинг для оптимізації (офіційна рекомендація)
+  cy.batch(() => {
+    cy.add(nodes);
+    cy.add(edges);
+  });
 
   // Покращений layout для двочасткового графа
   const maxRows = Math.max(leftCount, rightCount);
@@ -447,8 +477,11 @@ export function generateStarGraph(cy, nodeCount, isDirected, minWeight, maxWeigh
     }
   }
 
-  cy.add(nodes);
-  cy.add(edges);
+  // Використовуємо батчинг для оптимізації (офіційна рекомендація)
+  cy.batch(() => {
+    cy.add(nodes);
+    cy.add(edges);
+  });
 
   // Використовуємо concentric layout
   applyLayout(cy, 'concentric', {

@@ -1,4 +1,5 @@
 import { GraphEditor } from './GraphEditor.js';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 document.addEventListener("DOMContentLoaded", () => {
   try {

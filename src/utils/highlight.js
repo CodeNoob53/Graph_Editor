@@ -8,7 +8,12 @@ export function clearHighlights(cy) {
   activeTimeouts = [];
 
   // Видаляємо клас підсвітки з усіх елементів
-  cy.elements().removeClass('highlighted');
+  cy.elements().removeClass('highlighted dimmed processed ready');
+
+  // Скидаємо стилі, які могли бути змінені анімацією (PageRank)
+  cy.nodes().stop(true, true); // Зупиняємо анімації
+  cy.nodes().removeStyle('width height background-opacity label background-color border-width border-color');
+  cy.nodes().style({ 'label': (ele) => ele.id() }); // Відновлюємо дефолтний лейбл
 }
 
 function addTimeout(callback, delay) {
@@ -174,4 +179,121 @@ export function highlightNodesAndEdges(cy, nodes, edges, isDirected = false) {
       currentDelay += ANIMATION_STEP_DELAY;
     }
   }
+}
+
+export function animatePageRank(cy, steps) {
+  clearHighlights(cy);
+  let currentDelay = 0;
+  const STEP_DELAY = 500; // Повільніше для PageRank
+
+  steps.forEach(step => {
+    addTimeout(() => {
+      if (step.type === 'iteration' || step.type === 'init' || step.type === 'normalize') {
+        const ranks = step.ranks;
+
+        // Знаходимо максимальний ранг для масштабування
+        const maxRank = Math.max(...Object.values(ranks));
+
+        cy.nodes().forEach(node => {
+          const rank = ranks[node.id()] || 0;
+          const normalizedRank = maxRank > 0 ? rank / maxRank : 0;
+
+          // Змінюємо розмір та колір вершини залежно від рангу
+          const size = 30 + (normalizedRank * 50); // від 30px до 80px
+          const opacity = 0.4 + (normalizedRank * 0.6); // від 0.4 до 1.0
+
+          // Встановлюємо текстові властивості окремо (вони не анімуються)
+          node.style({
+            'label': `${node.id()}\n${(rank * 100).toFixed(2)}%`,
+            'text-wrap': 'wrap',
+            'color': '#ffffff',
+            'text-outline-color': '#000000',
+            'text-outline-width': 2,
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'font-size': '14px', // Фіксований розмір шрифту
+            'text-line-height': 1.5 // Збільшений інтервал між рядками
+          });
+
+          // Анімуємо геометричні властивості
+          node.animate({
+            style: {
+              'width': size,
+              'height': size,
+              'background-opacity': opacity
+            }
+          }, {
+            duration: STEP_DELAY / 2
+          });
+        });
+      }
+    }, currentDelay);
+
+    currentDelay += STEP_DELAY;
+  });
+}
+
+export function animateTopologicalSort(cy, steps) {
+  clearHighlights(cy);
+  let currentDelay = 0;
+  const STEP_DELAY = 800;
+
+  // Скидаємо стилі перед початком
+  cy.elements().removeClass('highlighted dimmed processed ready');
+  cy.nodes().style({ 'label': (ele) => ele.id() }); // Скидаємо лейбли
+
+  steps.forEach(step => {
+    addTimeout(() => {
+      if (step.type === 'init') {
+        // Показуємо початкові вхідні степені
+        cy.nodes().forEach(node => {
+          const degree = step.inDegrees[node.id()];
+          node.style('label', `${node.id()} (in: ${degree})`);
+        });
+      } else if (step.type === 'ready-nodes') {
+        // Підсвічуємо вершини з 0 вхідним степенем
+        cy.nodes().removeClass('ready');
+        step.nodes.forEach(nodeId => {
+          cy.getElementById(nodeId).addClass('ready');
+        });
+      } else if (step.type === 'select-node') {
+        // Вершина вибрана і додана в сортування
+        const node = cy.getElementById(step.node);
+        node.removeClass('ready').addClass('processed');
+
+        // Анімація "переміщення" або просто підсвітка
+        node.animate({
+          style: {
+            'background-color': '#4dabf7',
+            'border-width': 4,
+            'border-color': '#1864ab'
+          }
+        }, { duration: 300 });
+
+      } else if (step.type === 'update-degrees') {
+        // Оновлюємо лейбли з новими степенями
+        const inDegrees = step.inDegrees;
+        cy.nodes().forEach(node => {
+          if (inDegrees[node.id()] !== undefined) {
+            // Тільки якщо вершина ще не оброблена
+            if (!step.removedEdges.includes(node.id())) {
+              node.style('label', `${node.id()} (in: ${inDegrees[node.id()]})`);
+            }
+          }
+        });
+
+        // "Видаляємо" ребра (робимо напівпрозорими)
+        step.removedEdges.forEach(edgeId => {
+          cy.getElementById(edgeId).addClass('dimmed');
+        });
+
+        // Підсвічуємо нові готові вершини
+        step.newReadyNodes.forEach(nodeId => {
+          cy.getElementById(nodeId).addClass('ready');
+        });
+      }
+    }, currentDelay);
+
+    currentDelay += STEP_DELAY;
+  });
 }
